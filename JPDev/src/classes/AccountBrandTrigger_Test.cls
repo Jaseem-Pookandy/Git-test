@@ -7,7 +7,7 @@
 ********************************************************************
 Modified by : Jaseem Pookandy
 Description : added the orphan fix logic test on acconut brand delete
-ssdfs
+rerq
 */
 @isTest  
 private class AccountBrandTrigger_Test {
