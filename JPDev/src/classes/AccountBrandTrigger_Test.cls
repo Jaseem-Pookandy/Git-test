@@ -3,7 +3,7 @@
 // 
 // Description   : Class that tests the functionality of Account_Brand__c Trigger.
 //     
-// Dec 13th, 2012    Karun Gangwani(Appirio Off)
+// Dec 13th, 2012    Karun Gangwani(Appirio Off)mm
 ********************************************************************
 Modified by : Jaseem Pookandy
 Description : added the orphan fix logic test on acconut brand delete
