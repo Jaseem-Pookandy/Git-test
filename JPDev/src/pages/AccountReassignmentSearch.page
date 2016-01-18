@@ -1,0 +1,211 @@
+<apex:page controller="AccountReassignmentSearchController" sidebar="false">
+  <apex:form >
+  <apex:pageMessages id="errors" />
+  <apex:pageBlock mode="edit" >   
+      <apex:pageBlock id="TopPage">            
+        <apex:commandButton rendered="{!setCon.hasPrevious}" value="first" action="{!setCon.first}"/>
+        <apex:commandButton rendered="{!setCon.hasPrevious}" value="Previous" action="{!setCon.previous}"/>
+        <apex:outputText rendered="{!(setCon.pageNumber * setCon.pageSize) < setCon.ResultSize}" value="{!setCon.pageNumber * setCon.pageSize} Of {!setCon.ResultSize}"></apex:outputText>
+        <apex:outputText rendered="{!(setCon.pageNumber * setCon.pageSize) >= setCon.ResultSize}" value="{!setCon.ResultSize} Of {!setCon.ResultSize}"></apex:outputText>   
+        <apex:commandButton rendered="{!setCon.hasNext}" value="next" action="{!setCon.next}"/>   
+        <apex:commandButton rendered="{!setCon.hasNext}" value="last" action="{!setCon.last}"/>
+      </apex:pageBlock>
+
+      <table width="100%" border="0">
+      <tr>  
+        <td width="200" valign="top">
+    
+          <apex:pageBlock title="Search" mode="edit" id="criteria">
+    
+          <script type="text/javascript">
+          function doSearch() {
+            searchServer(
+              document.getElementById("uploadedFileRef").value,
+              document.getElementById("accountNumber").value,
+              document.getElementById("name").value,
+              document.getElementById("salesRep").value,
+              document.getElementById("supportRep").value,
+              document.getElementById("status").options[document.getElementById("status").selectedIndex].value
+              );
+          }
+          </script> 
+    
+          <apex:actionFunction name="searchServer" action="{!runSearch}" rerender="results,debug,errors">
+              <apex:param name="uploadedFileRef" value="" />
+              <apex:param name="accountNumber" value="" />
+              <apex:param name="name" value="" />
+              <apex:param name="salesRep" value="" />
+              <apex:param name="supportRep" value="" />
+              <apex:param name="status" value="" />
+          </apex:actionFunction>
+    
+          <table cellpadding="2" cellspacing="2">
+          <tr>
+            <td style="font-weight:bold;">Uploaded File Ref<br/>
+            <input type="text" id="uploadedFileRef" onkeyup="doSearch();"/>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold;">Account Number<br/>
+            <input type="text" id="accountNumber" onkeyup="doSearch();"/>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold;">Name<br/>
+            <input type="text" id="name" onkeyup="doSearch();"/>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold;">Sales Rep<br/>
+            <input type="text" id="salesRep" onkeyup="doSearch();"/>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold;">Customer Support<br/>
+            <input type="text" id="supportRep" onkeyup="doSearch();"/>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold;">Status<br/>
+              <select id="status" onchange="doSearch();">
+                <option value=""></option>
+                <apex:repeat value="{!statusLst}" var="stat">
+                  <option value="{!stat}">{!stat}</option>
+                </apex:repeat>
+              </select>
+            </td>
+          </tr>
+          </table>
+    
+          </apex:pageBlock>
+    
+        </td>
+        <td valign="top">
+    
+        <apex:pageBlock mode="edit" id="results">
+            <apex:pageBlockTable value="{!PaginatedAccountReassignments}" var="reassign">        
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="Uploaded File Ref" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="Uploaded_File_Ref__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.Uploaded_File_Ref__c}"/>
+                </apex:column>          
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="Account Number" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="Account_Number_Assigned__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.Account_Number_Assigned__c}"/>
+                </apex:column>    
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="Name" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="Name" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.Name}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="CJ Sales Rep" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="CJRep__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.CJRep__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="CJ CS Rep" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="CJCSR__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.CJCSR__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="Dice Sales Rep" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="DiceRep__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.DiceRep__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="Dice CS Rep" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="DiceCSR__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.DiceCSR__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="EFC Sales Rep" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="EFCRep__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.EFCRep__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="EFC CS Rep" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="EFCCSR__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.EFCCSR__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="RZ Sales Rep" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="RZRep__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.RZRep__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="RZ CS Rep" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="RZCSR__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.RZCSR__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="Status" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="Status__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.Status__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink value="Remark" action="{!toggleSort}" rerender="results,debug">
+                            <apex:param name="sortField" value="Remark__c" assignTo="{!sortField}"/>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!reassign.Remark__c}" style="max-height:3em;overflow:hidden;"/>
+                </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    
+        </td>
+      </tr>
+      </table>  
+  
+  <apex:pageBlock id="bottomPage">             
+    <apex:commandButton rendered="{!setCon.hasPrevious}" value="first" action="{!setCon.first}"/>
+    <apex:commandButton rendered="{!setCon.hasPrevious}" value="Previous" action="{!setCon.previous}"/>
+    <apex:outputText rendered="{!(setCon.pageNumber * setCon.pageSize) < setCon.ResultSize}" value="{!setCon.pageNumber * setCon.pageSize} Of {!setCon.ResultSize}"></apex:outputText>
+    <apex:outputText rendered="{!(setCon.pageNumber * setCon.pageSize) >= setCon.ResultSize}" value="{!setCon.ResultSize} Of {!setCon.ResultSize}"></apex:outputText>   
+    <apex:commandButton rendered="{!setCon.hasNext}" value="next" action="{!setCon.next}"/>   
+    <apex:commandButton rendered="{!setCon.hasNext}" value="last" action="{!setCon.last}"/>
+  </apex:pageBlock>
+
+  </apex:pageBlock>
+
+  </apex:form>
+
+</apex:page>

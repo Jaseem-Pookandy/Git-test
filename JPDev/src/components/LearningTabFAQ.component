@@ -1,0 +1,88 @@
+<apex:component >
+ <style> 
+                        
+    .activeTab { color:black; font-weight:700; font-size:12px; background-image:none;font-family:Arial,Helvetica,sans-serif;}
+    .inactiveTab { background-color: white; color:#666666; font-size:12px; background-image:none;font-family:Arial,Helvetica,sans-serif;}
+
+    h1 {font-size:24px; font-family:Arial,Helvetica,sans-serif;}
+    .task_name {cursor:pointer;font-size:15px;color:black;}
+    .task_name > h2 {font-size:15px;color:#015BA7;margin-top:15px;margin-left:10px;}
+    .task_steps {margin-left:25px;margin-bottom:10px;display:none;font-size:13px;color:#666666;}
+    h3 {font-size:14px;margin-bottom:10px;}
+    </style>
+    
+       <div class="main-tab-panel">
+            <div class="accordion">
+            <ol><a href="#">About Chatter</a></ol>
+    
+              <div>
+              <div class="task_name">
+                <h2>What is Chatter?</h2>
+            
+                <div class="task_steps" >
+                  <p>Chatter is a collaboration application that helps you connect with coworkers inside your Salesforce organization and share business information securely and in real time. Additionally, you can invite coworkers without Salesforce licenses to join Chatter. Invited users can view profiles, post on their feed, and join groups, but can't see your Salesforce data or records. Chatter works in accordance with all of the security and permission settings in your Salesforce organization. Chatter is enabled by default for organizations created after June 22, 2010. For existing organizations, you must enable Chatter.</p>
+                </div>
+              </div>
+            
+              <div class="task_name">
+                <h2>Is Chatter secure?</h2>
+            
+                <div class="task_steps">
+                  <p>Yes, Chatter is completely secure and works in accordance with all of the security and permission settings in your Salesforce organization.</p>
+                </div>
+              </div>
+            
+               <div class="task_name">
+                <h2>What should I post on Chatter?</h2>
+            
+                <div class="task_steps">
+                  <p>Chatter is a collaboration and communication tool for businesses. Use Chatter to post business- related updates, not what you had for breakfast or saw at the movies last night. A good rule of thumb to keep Chatter business-relevant is ask yourself if you would mind your CEO or HR team reading your post before clicking submit.</p>
+                </div>
+              </div>
+              
+               <div class="task_name">
+                <h2>How can I “follow data” in Salesforce via Chatter?</h2>
+            
+                <div class="task_steps">
+                  <p>With Chatter, every record in Salesforce, such as an individual account or opportunity record, can be followed. This means that whenever something changes in that record, you’ll be notified instantly.</p>
+                </div>
+              </div>
+              
+              
+               <div class="task_name">
+                <h2>Can I preview documents in my feed?</h2>
+            
+                <div class="task_steps">
+                  <p>With many common business file types—like Microsoft Office documents, unprotected PDFs, and many image files—you can preview the file right in your feed before downloading it.</p>
+                </div>
+              </div>
+              
+              
+               <div class="task_name">
+                <h2>How do I see the Chatter tabs?</h2>
+            
+                <div class="task_steps">
+                  <p>The Chatter, Profile, People, Groups, and Files tabs are available by default in the Chatter app. Select this app from the app menu in the top right corner of any page. If your administrator has added these tabs to other apps, you'll see the tabs in those apps unless you previously customized your display. In that case, you'll need to add the tabs to those apps.</p>
+                </div>
+              </div>
+              </div>
+              
+              <ol><a href="#">Splits and Commissions</a></ol>
+              <div> Lorem </div>
+              
+              <ol><a href="#">Forecasting in Salesforce</a></ol>
+              <div> Lorem </div>
+
+              </div>
+    </div> <!-- end main tab panel-->   
+    
+    <div class="learning_app_recommended_panel" style="margin-top:0px;">
+        <h1>FAQ Options</h1>
+            <div style = "margin-left:15px;">
+                <a href="#;return false;" id="showAll">Show All</a> | 
+                <a href="#;return false;" id="hideAll">Hide All</a> | <br/>
+                <a href="#;return false;" target="_blank">Download Printable Copy</a>
+            </div>
+        <br/>
+    </div>
+</apex:component>

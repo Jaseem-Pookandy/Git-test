@@ -1,0 +1,109 @@
+<apex:component controller="LearningTabContentController">
+    <apex:includeScript value="{!URLFOR($Resource.LearningTabResources, 'jQuery/js/jquery-1.7.2.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.LearningTabResources, 'jQuery/js/jsrender.js')}"/>
+
+    
+    <apex:attribute name="myValue" description="This is the value for the component." type="String" required="true"/>
+    <apex:attribute name="myContentType" description="This is the type of content for the component." type="String" required="true" assignTo="{!myContentType}"/>
+    <apex:attribute name="borderColor" description="This is color for the border." type="String" required="false"/>
+    <style>
+     .content-sketch a{
+        color:#666666;
+        font-size: 80%;
+     }
+    </style>
+    <script type="text/javascript">
+       
+        //derive the correct Icon for this given format
+        function getIcon(sFormat, sURL) { //returns icon url based on content format
+            //if there is a preview URL already, use that
+            if ((sURL != null) && (sURL.indexOf('http://') >=0 ) ) return sURL;
+            switch (sFormat) {
+                case 'Video' :
+                    return '{!URLFOR($Resource.LearningTabResources, 'images/video_icon.png')}'
+                default :  
+                    return '{!URLFOR($Resource.LearningTabResources, 'images/pdf_image.png')}'
+                }
+            } //end getIcon
+
+        //build the HTML for this list of learning items
+        function buildVideoList(contentJson,containerId) {
+            for (i=0;i<contentJson.length;i++) {
+                // Apply Jquery Template to all contentJson and append to the passed container Id
+                //$('#'+containerId).append($("#itemTemplate" ).tmpl(contentJson[i]));
+               $( '#'+containerId ).append(
+                    $( "#itemTemplate" ).render( contentJson[i],{getIcon:function(sFormat, sURL){
+                                                                            return  getIcon(sFormat, sURL);
+                                                                          }})
+                );
+            }   
+        }
+
+        //build the HTML for this list of learning items
+        //By category - FIXME refactor
+        function buildVideoListByCategory(contentJson,containerId) {
+            var category = '';
+            var olId = '';
+            for (i=0;i<contentJson.length;i++) {
+                /* Create OL for new group */
+                if (contentJson[i].Category__c != category) { //group all items w/in categories {
+                    olId = containerId+'_'+i;
+                    $('#'+containerId).append('<ol><a href="#">' + contentJson[i].Category__c + '</a></ol><div class="accordian-content" id="'+olId+'"></div>');
+                }
+                category = contentJson[i].Category__c; //increment category
+                /* Apply Jquery template to the contentJson and append to the created OL */
+                //$('#'+olId).append($("#itemTemplate" ).tmpl(contentJson[i]));
+                 $( '#'+olId).append(
+                    $( "#itemTemplate" ).render( contentJson[i],{getIcon:function(sFormat, sURL){
+                                                                            return  getIcon(sFormat, sURL);
+                                                                          }})
+                );
+            }
+        }
+    </script>
+    
+    <!-- Created Jquery Template to populate data  -->
+    <script id="itemTemplate"  type="text/x-jsrender">
+        <div class="content_item" id="{{>Id}}" >
+            <div class="video-list-item" title="{{>Description__c}}">
+                <a class="iframe" href="${Content_URI__c}">
+                    <img style="float:left" src="{{: ~getIcon(Content_Format__c, Preview_URL__c) }}"/> </a>
+                    <div class="content-sketch">
+                        <span class="learning_asset_title">
+                            <a class="iframe" href="{{>Content_URI__c}}"> {{>Content_Title__c}}</a>
+                        </span>
+                        <br/>{{>Description__c}}
+                        <br/>
+                        <a class="iframe" href="{{>Content_URI__c}}">Preview</a>
+                        <a  href="{{>Content_URI__c}}" style="margin-left:10px;">Download</a>
+                        <br/>
+                    </div>
+                </a>    
+            </div>
+        </div>     
+    </script>
+
+    <div id="{!myContentType}_container">  <!-- added MycontentType to create unique container id -->             
+        <ol> <a href="#">Featured {!myContentType} for {!$User.FirstName}</a></ol>
+        <div class="accordian-content" id="{!myContentType}_featuredDiv"> <!-- added MycontentType to create unique div id -->
+            <script>
+                var s = {!path};
+                //document.write(buildVideoList(s));
+                buildVideoList(s,'{!myContentType}_featuredDiv');
+            </script>
+        </div>
+        <ol><a href="#">Recently Uploaded</a></ol>
+        <div class="accordian-content" id="{!myContentType}_recentlyUploadedDiv">  <!-- added MycontentType to create unique div id -->
+            <script>
+                var s = {!RecentlyUploaded};
+                //document.write(buildVideoList(s)); // commented document.write
+                buildVideoList(s,'{!myContentType}_recentlyUploadedDiv'); // passing data and container id to function
+            </script>
+        </div>
+        <script>
+            var contentJson = {!contentByCategory}; //str initialized in controller Content_List_con
+            //document.write(buildVideoListByCategory(s)); // commented document.write
+            buildVideoListByCategory(contentJson,'{!myContentType}_container'); // passing the container id and data
+        </script>
+    </div>
+</apex:component>

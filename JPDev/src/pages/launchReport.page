@@ -1,0 +1,45 @@
+<apex:page showHeader="false" sidebar="false" controller="LaunchReportController" action="{!autoLaunch}">
+	<!-- 
+
+		About:
+			This Launch report page exists as a shim for building custom VF buttons
+			that accept the query string paramter rpt for a human readable "developer name"
+			of a report in Salesforce and returns an automaticly redirecting PageReference
+			to the Report's GUID url while maintianing any other query string URL
+			parameters and passing them through transparently to the report's execution
+			interface.
+
+		Useage:
+			Create a new Visualforce button with a path of:
+			Navigate to:
+				Setup >
+					Customize >
+						Object of your choice >
+							Buttons and Links >
+								Click the [new] Button in the Custom Buttons and Links section
+									Enter Label and Name details
+									Choose "Detail Page Button" or "List Button"
+									Choose whichever behavior makes sense for your situation
+									Choose "URL" for Content Source
+									In the formual feild enter the URL with the following syntax
+									as your guide:
+
+									/apex/launchReport?rpt=<REPORT_NAME>&scope=user&units=m&colDt_q=cury
+
+									The required part of the url is:
+									/apex/launchReport?rpt=<REPORT_NAME>
+									Where <REPORT_NAME> is the human readable name of your report
+									as displayed in the report folder views. If your Report name
+									contains spaces, replace each space with an underscore.
+									For instance, if you wanted to run a report named "Test Report" your 
+									URL would read:
+									/apex/launchReport?rpt=Test_Report
+
+									After the name of the report additional custom parameters may be 
+									added to the url using stadard url QueryString syntax of:
+									key=value&key2=value2&key3=value3
+									These Parameters will be passed onto the report for excution allowing
+									you to customize, for instance date ranges of the reports execution.
+
+	 -->
+</apex:page>

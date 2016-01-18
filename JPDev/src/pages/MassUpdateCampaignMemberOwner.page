@@ -1,0 +1,143 @@
+<apex:page controller="MassUpdateCampMemberController">
+    <apex:includeScript value="{!$Resource.jquery}" />
+    <script>
+        $(document).ready(function(){
+            $('.checkAll').live('click', function(){
+                if ($(this).attr('checked') == 'checked') {
+                    $('.recCheckbox').attr('checked', this.checked);
+                } else {
+                    $('.recCheckbox').attr('checked', this.checked);
+                }
+            });
+            $('.pagingCls').click(function(){
+                $('.checkAll').attr('checked', false);
+            });
+        });
+    </script>
+    <apex:sectionHeader subtitle="Campaign Members"/>
+    <apex:form >
+        <apex:actionFunction name="checkPgSize" action="{!checkPageSize}" reRender="table, pagingPanel1, pagingPanel2" 
+                                                status="loadingRecsPageSize"/>
+
+        <apex:actionFunction action="{!sortData}" name="sortAccountDataJS" reRender="table, pagingPanel1, pagingPanel2" status="loadingRecs" >
+            <apex:param name="sortField" assignTo="{!sortField}" value="" />
+        </apex:actionFunction>
+                                                    
+        <apex:pageMessages />
+        <apex:pageBlock title="Search Campaign Members" rendered="{!IF(CampaignID <> null, false, true)}">
+           
+            <div style="border:1px soild #000;">
+                
+                <apex:outputLabel style="font-weight:bold; color:#363636;">Campaign:</apex:outputLabel>
+                <apex:inputField value="{!camp.CampaignId}" required="false" />
+                
+                <apex:outputLabel style="font-weight:bold; color:#363636;">Campaign Member Owner:</apex:outputLabel>
+                <apex:inputField value="{!camp.Owner_Assigned__c}" required="false" />
+                
+                <apex:commandButton value="Filter" style="width:75px;" action="{!searchByOwner}" reRender="table, pagingPanel1, pagingPanel2" status="loadingRecs"/>
+                <!-- <apex:commandButton value="Reset" style="width:75px;" action="{!reset}" reRender="table, pagingPanel1, pagingPanel2"/> -->
+            </div>
+            
+        </apex:pageBlock>
+        <apex:pageBlock >
+            <apex:commandButton value="Update Owner" action="{!processSelected}" />
+            <apex:outputPanel id="pagingPanel1" style="float:right;">
+                <!--{!pageNumber} -- {!totalNumPages}- -->
+                <apex:actionStatus id="loadingRecs" style="align:center;"  >
+                    <apex:facet name="start" >
+                        <apex:image url="{!$Resource.loading}" height="16" />
+                    </apex:facet>
+                </apex:actionStatus>
+                
+                <apex:commandButton value="Previous" action="{!previous}" disabled="{!IF(pageNumber < 1, true, false)}" style="width:75px;" reRender="table, pagingPanel1, pagingPanel2" status="loadingRecs" />
+                <apex:commandButton value="Next" action="{!next}"  disabled="{!IF(pageNumber <> totalNumPages, false, true)}" style="width:75px;" reRender="table, pagingPanel1, pagingPanel2" status="loadingRecs" />
+            </apex:outputPanel>            
+            <!-- In our table we are displaying the cCampaignMember records -->
+            <apex:pageBlockTable value="{!CampaignMemberList}" var="c" id="table">
+                <apex:column style="width:25px;" >
+                    <apex:facet name="header">
+                        <input type="checkbox" class="checkAll" checked="" />
+                    </apex:facet>
+                    <!-- This is our selected Boolean property in our wrapper class -->
+                    <apex:inputCheckbox value="{!c.selected}" styleClass="recCheckbox"/>
+                </apex:column>
+                <!-- This is how we access the CampaignMember values within our cCampaignMember container/wrapper -->
+                <apex:column style="width:350px;" >
+                   <apex:facet name="header">Campaign Member</apex:facet>
+                   <apex:outputlink target="_blank" value="/{!c.con.Id}">{!c.con.Contact.Name}({!c.con.Campaign.Name})</apex:outputlink>
+                </apex:column>
+                <apex:column style="width:280px;" >                
+                      <apex:outputLink target="_blank" value="/{!c.con.CampaignID}" title="Account Name" >{!c.con.Campaign.Name}</apex:outputLink>
+                         <apex:facet name="header">
+                         <apex:outputPanel >
+                             <apex:outputLink value="javascript:void(0);"
+                                 onclick="sortAccountDataJS('Campaign.Name');">Campaign<img
+                                     src="{!IF(sortField = 'Campaign.Name',IF(isAsc = true,'/img/sort_asc_arrow.gif','/img/sort_desc_arrow.gif'),'/s.gif')}" />
+                             </apex:outputLink>                                                              
+                         </apex:outputPanel>
+                     </apex:facet>                
+                </apex:column>                    
+                <apex:column style="width:280px;">                
+                      <apex:outputLink target="_blank" value="/{!c.con.ContactID}" title="Contact" >{!c.con.Contact.Name}</apex:outputLink>
+                         <apex:facet name="header">
+                         <apex:outputPanel >
+                             <apex:outputLink value="javascript:void(0);"
+                                 onclick="sortAccountDataJS('Contact.Name');">Contact<img
+                                     src="{!IF(sortField = 'Contact.Name',IF(isAsc = true,'/img/sort_asc_arrow.gif','/img/sort_desc_arrow.gif'),'/s.gif')}" />
+                             </apex:outputLink>                                                              
+                         </apex:outputPanel>
+                     </apex:facet>                
+                </apex:column>                    
+                <apex:column style="width:220px;">                
+                      <apex:outputLink target="_blank" value="/{!c.con.Owner_Assigned__c}" title="Owner" >{!c.con.Owner_Assigned__r.Name}</apex:outputLink>
+                         <apex:facet name="header">
+                         <apex:outputPanel >
+                             <apex:outputLink value="javascript:void(0);"
+                                 onclick="sortAccountDataJS('Owner_Assigned__r.Name');">Owner<img
+                                     src="{!IF(sortField = 'Owner_Assigned__r.Name',IF(isAsc = true,'/img/sort_asc_arrow.gif','/img/sort_desc_arrow.gif'),'/s.gif')}" />
+                             </apex:outputLink>                                                              
+                         </apex:outputPanel>
+                     </apex:facet>                
+                </apex:column>   
+                <apex:column >                
+                      <apex:outputLink target="_blank" value="/{!c.con.Status}" title="Status" >{!c.con.Status}</apex:outputLink>
+                         <apex:facet name="header">
+                         <apex:outputPanel >
+                             <apex:outputLink value="javascript:void(0);"
+                                 onclick="sortAccountDataJS('Status');">Status<img
+                                     src="{!IF(sortField = 'Status',IF(isAsc = true,'/img/sort_asc_arrow.gif','/img/sort_desc_arrow.gif'),'/s.gif')}" />
+                             </apex:outputLink>                                                              
+                         </apex:outputPanel>
+                     </apex:facet>                
+                </apex:column>                 
+
+            </apex:pageBlockTable>
+            <apex:outputPanel id="pagingPanel2" >
+                <div style="text-align: left; float:left; margin:5px 0px 0px 35px;">
+                    {!showCurrentState}&nbsp;
+                            <apex:selectList value="{!pageSize}" multiselect="false" size="1" style="width:19px;" onchange="checkPgSize();" title="Display records per page">
+                                <apex:selectOption itemValue="10" itemlabel="Display 10 records per page"/>
+                                <apex:selectOption itemValue="25" itemlabel="Display 25 records per page" />
+                                <apex:selectOption itemValue="50" itemlabel="Display 50 records per page" />
+                                <apex:selectOption itemValue="100" itemlabel="Display 100 records per page" />
+                                <apex:selectOption itemValue="200" itemlabel="Display 200 records per page" />
+                            </apex:selectlist> 
+                            <apex:actionStatus id="loadingRecsPageSize" style="align:center;"  >
+                                <apex:facet name="start" >
+                                   <apex:image url="{!$Resource.loading}" height="16" />
+                                 </apex:facet>
+                            </apex:actionStatus>
+                </div>
+                <div style="text-align: right; float:right; margin:5px 0px 0px 0px;">
+                    <apex:commandButton value="Previous" styleClass="pagingCls" action="{!previous}" disabled="{!IF(pageNumber < 1, true, false)}" style="width:75px;" reRender="table, pagingPanel1, pagingPanel2" status="loadingRecs"/>
+                    <apex:commandButton value="Next" styleClass="pagingCls" action="{!next}"  disabled="{!IF(pageNumber <> totalNumPages, false, true)}" style="width:75px;" reRender="table, pagingPanel1, pagingPanel2" status="loadingRecs"/>
+                </div>
+                <br />
+                                <br />
+            </apex:outputPanel>
+        </apex:pageBlock>        
+
+
+    </apex:form>
+    
+</apex:page>

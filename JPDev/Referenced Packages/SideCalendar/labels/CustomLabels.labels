@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>ButtonNewEvent</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ButtonNewEvent</shortDescription>
+        <value>New Event</value>
+    </labels>
+    <labels>
+        <fullName>ButtonNewTask</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ButtonNewTask</shortDescription>
+        <value>New Task</value>
+    </labels>
+    <labels>
+        <fullName>ButtonToday</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ButtonToday</shortDescription>
+        <value>View Current Month</value>
+    </labels>
+    <labels>
+        <fullName>ErrorMsgDateProcessing</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ErrorMsgDateProcessing</shortDescription>
+        <value>An issue occurred processing dates.</value>
+    </labels>
+    <labels>
+        <fullName>ErrorMsgEventAccess</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ErrorMsgEventAccess</shortDescription>
+        <value>Please check Event object field access.</value>
+    </labels>
+    <labels>
+        <fullName>ErrorMsgTaskAccess</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ErrorMsgTaskAccess</shortDescription>
+        <value>Please check Task object field access.</value>
+    </labels>
+    <labels>
+        <fullName>ErrorObjectFieldAccess</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ErrorObjectFieldAccess</shortDescription>
+        <value>Check Event object and field access</value>
+    </labels>
+    <labels>
+        <fullName>LabelAllDay</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>LabelAllDay</shortDescription>
+        <value>All day</value>
+    </labels>
+    <labels>
+        <fullName>LblBlankSubject</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>LblBlankSubject</shortDescription>
+        <value>No Subject</value>
+    </labels>
+    <labels>
+        <fullName>LinkHelp</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>LinkHelp</shortDescription>
+        <value>Help</value>
+    </labels>
+    <labels>
+        <fullName>TooltipHelp</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>TooltipHelp</shortDescription>
+        <value>Learn about SideCalendar</value>
+    </labels>
+    <labels>
+        <fullName>TooltipNewEvent</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>TooltipNewEvent</shortDescription>
+        <value>Create a new event</value>
+    </labels>
+    <labels>
+        <fullName>TooltipNewTask</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>TooltipNewTask</shortDescription>
+        <value>Create a new Task</value>
+    </labels>
+    <labels>
+        <fullName>TooltipToday</fullName>
+        <categories>CCW, SideCalendar</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>TooltipToday</shortDescription>
+        <value>View the current month</value>
+    </labels>
+</CustomLabels>

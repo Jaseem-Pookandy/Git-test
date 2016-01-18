@@ -1,0 +1,401 @@
+<apex:component controller="CustomChargeGroupController" allowDML="true" >
+
+<apex:includeScript value="{!$Resource.zqu__JQuery142}" />
+
+<script>
+	function reloadCurrentPage()
+	{
+		var url = '{!$CurrentPage.URL}';
+		if(url.toString().indexOf("SelectProduct") !== -1)
+		{
+			url = "apex/SelectProductWithFilterCon?id={!$CurrentPage.parameters.id}";	
+			window.parent.location.replace(url);
+		}
+		else
+		{
+			window.parent.location.replace('/{!$CurrentPage.parameters.id}');
+		}	
+	}
+</script>
+
+<apex:attribute name="quoteId" assignTo="{!quoteId}" description="Quote Id" type="string"/>
+<apex:attribute name="chargeGroups" assignTo="{!chargeGroups}" description="Charge Groups for Quote" type="zqu.zChargeGroup[]"/>
+<apex:attribute name="allowEditInComponent" assignTo="{!allowEditInComponent}" description="flag to allow buttons to edit/delete" type="boolean"/>
+
+<apex:pageBlock id="chargeGroupBlock" rendered="{!!editMode}">
+
+  <apex:outputPanel id="chargeGrouppanel">
+  
+  	<apex:repeat value="{!listWrapperChargeGroups}" var="chargeGroup" id="ratePlanRepeat">
+	
+	<b><apex:outputLabel value="{!chargeGroup.productName} : {!chargeGroup.ratePlanName}"></apex:outputLabel></b>
+	
+	<apex:commandlink value="UnDelete"
+		styleclass="btn"
+		oncomplete="reloadCurrentPage()"
+		style="text-decoration:none;float:right;line-height:5px;padding-top:6px;padding-bottom:4px"
+		action="{!deleteChargeGroup}"
+		rendered="{!IF((allowEditInComponent && chargeGroup.types == 6),true, false)}">
+		<apex:param name="chargeGroupId"
+			assignTo="{!selectedChargeGroupId}" 
+			value="{!chargeGroup.groupID}">
+		</apex:param>
+	</apex:commandlink>
+	<apex:commandlink value="Delete"
+		styleclass="btn"
+		oncomplete="reloadCurrentPage()"
+		style="text-decoration:none;float:right;line-height:5px;padding-top:6px;padding-bottom:4px"
+		action="{!deleteChargeGroup}" 
+		rendered="{!IF((allowEditInComponent && NOT(chargeGroup.types == 6)), true, false)}">
+		<apex:param name="chargeGroupId" 
+			assignTo="{!selectedChargeGroupId}" 
+			value="{!chargeGroup.groupID}">
+		</apex:param>
+	</apex:commandlink>
+	<apex:commandlink value="Edit"
+        styleclass="btn"
+        style="text-decoration:none;float:right;line-height:5px;padding-top:6px;padding-bottom:4px"
+        action="{!editChargeGroup}"
+        rendered="{!IF((allowEditInComponent && NOT(chargeGroup.types == 6)), true, false)}">
+        <apex:param name="chargeGroupId"
+            assignTo="{!selectedChargeGroupId}" 
+            value="{!chargeGroup.groupId}">
+        </apex:param>
+    </apex:commandlink>	
+	
+	<strike>
+	<apex:pageBlockTable columnsWidth="10%" width="80%" rules="cols" cellpadding="10" value="{!chargeGroup.listOfCharges}" var="charge" id="chargesRemove" rendered="{!IF(chargeGroup.types == 6, true, false)}" rowClasses="odd,even" styleClass="tableClass">
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Name</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['NAME']}"></apex:outputLabel>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Model</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['MODEL']}"></apex:outputLabel>
+		</apex:column>
+
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Type</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['CHARGE_TYPE']}"></apex:outputLabel>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Period</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['PERIOD']}"></apex:outputLabel>
+		</apex:column>
+
+		<apex:column style="width:100px" rendered="{!IF(chargeGroup.productGroup == 'Attending', true, false)}" >
+			<apex:facet name="header">Custom Fields</apex:facet>
+			<b>Country:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Country__c']}"/>
+			<br/>
+			<b>Event:</b><apex:outputField value="{!charge.wCharge.chargeObject['Event__c']}"/>
+			<br/>
+			<b>Notes:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Notes__c']}"/>
+			<br/>
+			<b>Sales Representative Name:</b><apex:outputField value="{!charge.wCharge.chargeObject['Sales_Representative__c']}"/>
+			<br/>
+			<b>Service Start:</b><apex:outputField value="{!charge.wCharge.chargeObject['ServiceStart__c']}"/>
+			<br/>
+			<b>Service End:</b><apex:outputField value="{!charge.wCharge.chargeObject['ServiceEnd__c']}"/>
+		</apex:column>
+		
+		<apex:column style="width:100px" rendered="{!IF(chargeGroup.productGroup == 'Advertising', true, false)}">
+			<apex:facet name="header">Custom Fields</apex:facet>
+			<b>Country:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Country__c']}"/>
+			<br/>
+			<b>Notes:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Notes__c']}"/>
+			<br/>
+			<b>Sales Representative Name:</b><apex:outputField value="{!charge.wCharge.chargeObject['Sales_Representative__c']}"/>
+			<br/>
+			<b>Service Start:</b><apex:outputField value="{!charge.wCharge.chargeObject['ServiceStart__c']}"/>
+			<br/>
+			<b>Service End:</b><apex:outputField value="{!charge.wCharge.chargeObject['ServiceEnd__c']}"/>
+		</apex:column>
+		
+		<apex:column style="width:100px" rendered="{!IF(NOT(chargeGroup.productGroup == 'Attending'), IF(NOT(chargeGroup.productGroup == 'Advertising'), true, false), false)}" >
+			<apex:facet name="header">Custom Fields</apex:facet>
+			<b>Country:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Country__c']}"/>
+			<br/>
+			<b>Notes:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Notes__c']}"/>
+			<br/>
+			<b>Sales Representative Name:</b><apex:outputField value="{!charge.wCharge.chargeObject['Sales_Representative__c']}"/>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Quantity</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['QUANTITY']}"></apex:outputLabel>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge UOM</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['UNIT_OF_MEASURE']}"></apex:outputLabel>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+	        <apex:facet name="header">List Total</apex:facet>
+            <apex:outputText value="{!charge.wCharge['LIST_TOTAL']}"/>
+		</apex:column>	
+		
+		<apex:column style="width:100px" >
+	        <apex:facet name="header">Discount</apex:facet>
+            <apex:outputText value="{!charge.wCharge['DISCOUNT']}"/>
+        </apex:column>
+
+		<apex:column style="width:100px" rendered="{!IF(chargeGroup.productGroup == 'Other', IF(chargeGroup.ProductSubCategory == 'Discount', true, false), false)}" >
+      		<apex:facet name="header">Discount Rate</apex:facet>
+            <apex:outputText value="{!charge.wCharge['EFFECTIVE_PRICE']}"/>
+        </apex:column>
+        
+        <apex:column style="width:100px" rendered="{!IF(NOT(chargeGroup.productGroup == 'Other'), IF(NOT(chargeGroup.ProductSubCategory == 'Discount'), true, false), true)}" >
+      		<apex:facet name="header">Effective Price</apex:facet>
+            <apex:outputText value="{!charge.wCharge['EFFECTIVE_PRICE']}"/>
+        </apex:column>
+        
+        <apex:column style="width:100px" rendered="{!IF(chargeGroup.productGroup == 'Other', IF(NOT(chargeGroup.ProductSubCategory == 'Discount'), true, false), false)}" >
+      		<apex:facet name="header">Effective Price</apex:facet>
+            <apex:outputText value="{!charge.wCharge['EFFECTIVE_PRICE']}"/>
+        </apex:column>
+
+		<apex:column style="width:100px" >
+	        <apex:facet name="header">Total</apex:facet>
+            <apex:outputText value="{!charge.wCharge['TOTAL']}"/>
+		</apex:column>	                       	
+	</apex:pageBlockTable>	
+	</strike>
+	<apex:pageBlockTable columnsWidth="10%" width="80%" rules="cols" cellpadding="10" value="{!chargeGroup.listOfCharges}" var="charge" id="charges" rendered="{!IF(NOT(chargeGroup.types == 6), true, false)}" rowClasses="odd,even" styleClass="tableClass">
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Name</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['NAME']}"></apex:outputLabel>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Model</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['MODEL']}"></apex:outputLabel>
+		</apex:column>
+
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Type</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['CHARGE_TYPE']}"></apex:outputLabel>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Period</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['PERIOD']}"></apex:outputLabel>
+		</apex:column>
+
+		<apex:column style="width:100px" rendered="{!IF(chargeGroup.productGroup == 'Attending', true, false)}">
+			<apex:facet name="header">Custom Fields</apex:facet>
+			<b>Country:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Country__c']}"/>
+			<br/>
+			<b>Event:</b><apex:outputField value="{!charge.wCharge.chargeObject['Event__c']}"/>
+			<br/>
+			<b>Notes:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Notes__c']}"/>
+			<br/>
+			<b>Sales Representative Name:</b><apex:outputField value="{!charge.wCharge.chargeObject['Sales_Representative__c']}"/>
+			<br/>
+			<b>Service Start:</b><apex:outputField value="{!charge.wCharge.chargeObject['ServiceStart__c']}"/>
+			<br/>
+			<b>Service End:</b><apex:outputField value="{!charge.wCharge.chargeObject['ServiceEnd__c']}"/>
+		</apex:column>
+		
+		<apex:column style="width:100px" rendered="{!IF(chargeGroup.productGroup == 'Advertising', true, false)}">
+			<apex:facet name="header">Custom Fields</apex:facet>
+			<b>Country:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Country__c']}"/>
+			<br/>
+			<b>Notes:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Notes__c']}"/>
+			<br/>
+			<b>Sales Representative Name:</b><apex:outputField value="{!charge.wCharge.chargeObject['Sales_Representative__c']}"/>
+			<br/>
+			<b>Service Start:</b><apex:outputField value="{!charge.wCharge.chargeObject['ServiceStart__c']}"/>
+			<br/>
+			<b>Service End:</b><apex:outputField value="{!charge.wCharge.chargeObject['ServiceEnd__c']}"/>
+		</apex:column>
+		
+		<apex:column style="width:100px" rendered="{!IF(NOT(chargeGroup.productGroup == 'Attending'), IF(NOT(chargeGroup.productGroup == 'Advertising'), true, false), false)}">
+			<apex:facet name="header">Custom Fields</apex:facet>
+			<b>Country:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Country__c']}"/>
+			<br/>
+			<b>Notes:</b><apex:outputLabel value="{!charge.wCharge.chargeObject['Notes__c']}"/>
+			<br/>
+			<b>Sales Representative Name:</b><apex:outputField value="{!charge.wCharge.chargeObject['Sales_Representative__c']}"/>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge Quantity</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['QUANTITY']}"></apex:outputLabel>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+			<apex:facet name="header">Charge UOM</apex:facet>
+			<apex:outputLabel value="{!charge.wCharge['UNIT_OF_MEASURE']}"></apex:outputLabel>
+		</apex:column>
+		
+		<apex:column style="width:100px" >
+	        <apex:facet name="header">List Total</apex:facet>
+            <apex:outputText value="{!charge.wCharge['LIST_TOTAL']}"/>
+		</apex:column>	
+
+		<apex:column style="width:100px" >
+	        <apex:facet name="header">Discount</apex:facet>
+            <apex:outputText value="{!charge.wCharge['DISCOUNT']}"/>
+        </apex:column>
+
+        <apex:column style="width:100px" rendered="{!IF(chargeGroup.productGroup == 'Other', IF(chargeGroup.ProductSubCategory == 'Discount', true, false), false)}" >
+      		<apex:facet name="header">Discount Rate</apex:facet>
+            <apex:outputText value="{!charge.wCharge['EFFECTIVE_PRICE']}"/>
+        </apex:column>
+        
+        <apex:column style="width:100px" rendered="{!IF(NOT(chargeGroup.productGroup == 'Other'), IF(NOT(chargeGroup.ProductSubCategory == 'Discount'), true, false), false)}" >
+      		<apex:facet name="header">Effective Price</apex:facet>
+            <apex:outputText value="{!charge.wCharge['EFFECTIVE_PRICE']}"/>
+        </apex:column>
+        
+        <apex:column style="width:100px" rendered="{!IF(chargeGroup.productGroup == 'Other', IF(NOT(chargeGroup.ProductSubCategory == 'Discount'), true, false), false)}" >
+      		<apex:facet name="header">Effective Price</apex:facet>
+            <apex:outputText value="{!charge.wCharge['EFFECTIVE_PRICE']}"/>
+        </apex:column>
+
+		<apex:column style="width:100px" >
+	        <apex:facet name="header">Total</apex:facet>
+            <apex:outputText value="{!charge.wCharge['TOTAL']}"/>
+		</apex:column>	                       	
+	</apex:pageBlockTable>	
+	</apex:repeat>
+	</apex:outputPanel>
+</apex:pageBlock>
+
+<apex:pageBlock title="Edit Charges" id="editchargesblock" rendered="{!editMode}">
+   <apex:pageBlockTable columnsWidth="10%" width="80%" rules="cols" cellpadding="10"
+       value="{!chargeGroupToEdit.zCharges}" var="charge" id="editchargestable" rowClasses="odd,even" styleClass="tableClass">
+       <apex:column style="width:100px" >
+           <apex:facet name="header">Charge Name</apex:facet>
+           <apex:outputLabel value="{!charge['NAME']}"></apex:outputLabel>
+       </apex:column>
+       <apex:column style="width:100px" >
+           <apex:facet name="header">Charge Model</apex:facet>
+           <apex:outputLabel value="{!charge['MODEL']}"></apex:outputLabel>
+       </apex:column>
+       <apex:column style="width:100px" >
+           <apex:facet name="header">Charge Type</apex:facet>
+           <apex:outputLabel value="{!charge['CHARGE_TYPE']}"></apex:outputLabel>
+       </apex:column>
+        <apex:column style="width:100px" >
+           <apex:facet name="header">Charge Period:</apex:facet>
+           <apex:outputLabel value="{!charge['PERIOD']}"></apex:outputLabel>
+       </apex:column>     
+       <apex:column style="width:100px" rendered="{!RenderEventId}" >
+			<apex:facet name="header">Custom Fields</apex:facet>
+			<b>Country:</b>
+			<apex:selectList id="CountryAttending" value="{!charge.chargeObject['Country__c']}" size="1" required="true">
+	        	<apex:selectOptions value="{!CountryOptions}"/>
+            </apex:selectList>
+			<br/>
+			<b>Event:</b>
+			<apex:selectList id="EventIDAttending" value="{!charge.chargeObject['Event__c']}" size="1" required="true">
+	        	<apex:selectOptions value="{!EventIDOptions}"/>
+	        	<apex:actionSupport event="onchange" action="{!eventIDChange}" status="changeStatus" reRender="editchargesblock"/>
+            </apex:selectList>
+			<br/>
+			<b>Notes:</b><apex:inputField value="{!charge.chargeObject['Notes__c']}" rendered="true" id="NotesAttending"/>
+			<br/>
+			<b>Sales Representative Name:</b>
+			<apex:selectList id="SalesRepresentativeAttending" value="{!charge.chargeObject['Sales_Representative__c']}" size="1" >
+	        	<apex:selectOptions value="{!ActiveUsers}"/>
+            </apex:selectList>
+		</apex:column>
+		<apex:column style="width:100px" rendered="{!DatesFieldEditable}" >
+			<apex:facet name="header">Custom Fields</apex:facet>
+			<b>Country:</b>
+			<apex:selectList id="CountryAdvertising" value="{!charge.chargeObject['Country__c']}" size="1" required="true">
+	        	<apex:selectOptions value="{!CountryOptions}"/>
+            </apex:selectList>
+			<br/>
+			<b>Notes:</b><apex:inputField value="{!charge.chargeObject['Notes__c']}" rendered="true" id="NotesAdvertising"/>
+			<br/>
+			<b>Sales Representative Name:</b>
+			<apex:selectList id="SalesRepresentativeAdvertising" value="{!charge.chargeObject['Sales_Representative__c']}" size="1" >
+	        	<apex:selectOptions value="{!ActiveUsers}"/>
+            </apex:selectList>
+			<br/>
+			<b>Service Start:</b><apex:inputField value="{!charge.chargeObject['ServiceStart__c']}" rendered="true" id="ServiceStartDateAdvertising"/>
+			<br/>
+			<b>Service End:</b><apex:inputField value="{!charge.chargeObject['ServiceEnd__c']}" rendered="true" id="ServiceEndDateAdvertising"/>
+		</apex:column>
+		<apex:column style="width:100px" rendered="{!NoEventFields}" >
+			<apex:facet name="header">Custom Fields</apex:facet>
+			<b>Country:</b>
+			<apex:selectList id="Country" value="{!charge.chargeObject['Country__c']}" size="1" required="true">
+	        	<apex:selectOptions value="{!CountryOptions}"/>
+            </apex:selectList>
+			<br/>
+			<b>Notes:</b><apex:inputField value="{!charge.chargeObject['Notes__c']}" rendered="true" id="Notes"/>
+			<br/>
+			<b>Sales Representative Name:</b>
+			<apex:selectList id="SalesRepresentative" value="{!charge.chargeObject['Sales_Representative__c']}" size="1" >
+	        	<apex:selectOptions value="{!ActiveUsers}"/>
+            </apex:selectList>
+		</apex:column>
+       <apex:column style="width:100px" >
+       	   <apex:facet name="header">Charge Quantity</apex:facet>
+		   <apex:inputText value="{!charge['QUANTITY']}" rendered="{!charge['isQuantityEditable']}">
+				<apex:actionSupport event="onchange" action="{!quantityChange}" status="changeStatus" reRender="editchargesblock"/>
+		   </apex:inputText>
+           <apex:outputText value="{!charge['QUANTITY']}" rendered="{!IF((NOT(charge['isQuantityEditable'])), true, false)}"/>
+       </apex:column>
+       <apex:column style="width:100px" >
+           <apex:facet name="header">Charge UOM</apex:facet>
+           <apex:outputLabel value="{!charge['UNIT_OF_MEASURE']}"></apex:outputLabel>
+       </apex:column>
+       <apex:column style="width:100px" >
+	        <apex:facet name="header">List Total</apex:facet>
+            <apex:outputLabel value="{!charge['LIST_TOTAL']}"/>
+		</apex:column>
+       <apex:column style="width:100px" >
+           <apex:facet name="header">DISCOUNT</apex:facet>
+           <apex:inputText value="{!charge['DISCOUNT']}" rendered="{!IF(charge['isDiscountEditable'] && (charge['MODEL'] == 'Discount-Percentage' || charge['MODEL'] == 'Discount-Fixed Amount'), true, false)}">
+               <apex:actionSupport event="onchange" action="{!discountChange}" status="changeStatus" reRender="changing,chargeGroupBlock"/>
+           </apex:inputText>
+           <apex:outputText value="{!charge['DISCOUNT']}" rendered="{!IF(NOT(charge['isDiscountEditable'] && (charge['MODEL'] == 'Discount-Percentage' || charge['MODEL'] == 'Discount-Fixed Amount')), true, false)}"/>
+       </apex:column>
+       <apex:column style="width:100px" rendered="{!RenderDiscountRate}">
+          <apex:facet name="header">Discount Rate</apex:facet>
+          <apex:inputText value="{!charge['EFFECTIVE_PRICE']}" rendered="{!IF(charge['isEffectivePriceEditable'] && (charge['MODEL'] == 'Discount-Percentage' || charge['MODEL'] == 'Discount-Fixed Amount') && PriceEditable, true, false)}">
+              <apex:actionSupport event="onchange" action="{!effectiveChange}" status="changeStatus" reRender="changing,chargeGroupBlock"/>
+          </apex:inputText>
+          <apex:outputText value="{!charge['EFFECTIVE_PRICE']}" rendered="{!IF(NOT(charge['isEffectivePriceEditable'] && (charge['MODEL'] == 'Discount-Percentage' || charge['MODEL'] == 'Discount-Fixed Amount') && PriceEditable), true, false)}"/>
+       </apex:column> 
+       <apex:column style="width:100px" rendered="{!!RenderDiscountRate}">
+          <apex:facet name="header">EFFECTIVE PRICE</apex:facet>
+          <apex:inputText value="{!charge['EFFECTIVE_PRICE']}" rendered="{!IF(charge['isEffectivePriceEditable'] && charge['LIST_PRICE'] == '0.00' || (charge['LIST_PRICE'] == '-' && charge['MODEL'] == 'Discount-Percentage' || charge['MODEL'] == 'Discount-Fixed Amount') && PriceEditable, true, false)}">
+	      	<apex:actionSupport event="onchange" action="{!effectiveChange}" status="changeStatus" reRender="changing,chargeGroupBlock"/>
+	      </apex:inputText>
+          <apex:outputText value="{!charge['EFFECTIVE_PRICE']}" rendered="{!IF(charge['isEffectivePriceEditable'] && NOT(charge['LIST_PRICE'] == '0.00' || (charge['LIST_PRICE'] == '-' && charge['MODEL'] == 'Discount-Percentage' || charge['MODEL'] == 'Discount-Fixed Amount') && PriceEditable), true, false)}"/>
+       </apex:column>    
+       <apex:column style="width:100px" >
+       <apex:facet name="header">TOTAL</apex:facet>
+         <apex:inputText value="{!charge['TOTAL']}" rendered="{!IF(charge['isTotalEditable'] && (charge['MODEL'] == 'Discount-Percentage' || charge['MODEL'] == 'Discount-Fixed Amount'), true, false)}">
+         	<apex:actionSupport event="onchange" action="{!totalChange}" status="changeStatus" reRender="changing,chargeGroupBlock"/>
+         </apex:inputText>
+       <apex:outputText value="{!charge['TOTAL']}" rendered="{!IF(NOT(charge['isTotalEditable'] && (charge['MODEL'] == 'Discount-Percentage' || charge['MODEL'] == 'Discount-Fixed Amount')), true, false)}"/>
+       </apex:column>                                 
+   </apex:pageBlockTable>
+   <font color="#610B0B" size="1px">* To see the changes reflected, click outside the text area after entering input.</font>
+   <br/>
+   <br/>
+   <apex:commandlink value="Save"
+       styleclass="btn"
+       style="text-decoration:none"
+       rerender="editchargesblock"
+       oncomplete="reloadCurrentPage()"
+       action="{!saveChargeGroup}">                
+   </apex:commandlink>
+   <apex:commandlink value="Cancel"
+       styleclass="btn"
+       style="text-decoration:none"
+       rerender="editchargesblock"
+       oncomplete="reloadCurrentPage()"
+       action="{!goBack}">
+   </apex:commandlink>
+</apex:pageBlock>
+</apex:component>

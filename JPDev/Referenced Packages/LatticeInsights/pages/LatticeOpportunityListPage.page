@@ -1,0 +1,110 @@
+<apex:page controller="latticeforleads.LatticeLeadListController">
+    <apex:enhancedList type="Opportunity" height="425" rowsPerPage="25" id="opportunityList" 
+        oncomplete="LatticeOpportunityMainControl.onOpportunityListComplete()"
+    />
+
+    <c:LatticeCommonUtils />
+    <c:LatticeEnhancedList page="Opportunity" />
+    
+    <script language="javascript" runat="server">
+        LatticeOpportunityMainControl = can.Control.extend({
+            selectedOpportunityId: null,
+            
+            onOpportunityListComplete: function () {
+                LatticeCommon.setupEnhancedList(LatticeOpportunityMainControl, 'Opportunity');
+            },
+            
+            showOpportunityInDanteView: function ($opportunityRow) {
+                if ($opportunityRow == null || $opportunityRow.length == 0) {
+                    return;
+                }
+                
+                var opportunityId = LatticeCommon.getId($opportunityRow);
+                var leadDfd = LatticeCommon.getRemoteItem(
+                    '{!$RemoteAction.LatticeLeadListController.getLeadByOpportunityId}',
+                    opportunityId
+                );
+                $.when(leadDfd).then(function (result) {
+                    var leadId = null; 
+                    if (result != null) {
+                        leadId = LatticeCommon.convertSalesforceId(result.Id);
+                    }
+                    var accountId = null;
+                    if (result != null) {
+                        accountId = LatticeCommon.convertSalesforceId(result.latticeforleads__AccountID__c);
+                    }
+                    LatticeOpportunityMainControl.selectedOpportunityId = opportunityId;
+                    var baseLatticeUrl = "{!latticeUrl}";
+                    var $latticeIframe = $("#latticeIframe");
+                    $latticeIframe.show();
+                    if ($latticeIframe.attr('src') == null) {
+                        var latticeUrl = baseLatticeUrl + "?sin={!$Api.Session_ID}";
+                        latticeUrl += "&serverurl={!$Api.Partner_Server_URL_90}"; 
+                        latticeUrl += "&Directory=salesforce&userlink={!$User.Id}";
+                        latticeUrl += "&Opportunity=" + opportunityId;
+                        latticeUrl += "&HasSalesprism={!isSalesprismInstalled}";
+                        latticeUrl += "&CustomSettings=" + encodeURIComponent('{!customSettings}');
+                        if (accountId != null) {
+                            latticeUrl += "&Account=" + accountId;
+                        }
+                        
+                        $latticeIframe.attr('src', latticeUrl);
+                    } else {
+                        // Send a message to Dante that a new lead has been selected
+                        var latticeContentWindow = document.getElementById("latticeIframe").contentWindow;
+                        if (latticeContentWindow != null) {
+                            var crmSelectedEvent = "CrmOpportunitySelectedEvent=" + opportunityId;
+                            if (accountId != null) {
+                                    crmSelectedEvent += "?AccountID=" + accountId;
+                            }
+                            latticeContentWindow.postMessage(crmSelectedEvent, baseLatticeUrl);
+                        }
+                    }
+                });
+            }
+        },{
+            // Instance
+            init: function(element, options) {
+                // Listen for when our Dante sends postMessage events
+                window.addEventListener('message', function (evt) {
+                    if (evt && evt.data.indexOf("IsLeadActiveEvent") !== -1) {
+                        var separatorIndex = evt.data.indexOf("=");
+                        var leadId = evt.data.substring(separatorIndex + 1, evt.data.length);
+                        var leadDfd = LatticeCommon.getRemoteItem(
+                            '{!$RemoteAction.LatticeLeadListController.getLeadById}',
+                            leadId
+                        );
+                        $.when(leadDfd).then(function (result) {
+                            var lead = result;
+                            var isActive = !lead.IsDeleted && !lead.IsConverted; 
+                            var message = "IsLeadActiveReturnEvent=" + lead.Id + "?isActive=" + isActive;
+                            evt.source.postMessage(message , evt.origin);
+                        });
+                    } else if (evt && evt.data.indexOf("GoToSalesprismAccountEvent") !== -1) {
+                        var separatorIndex = evt.data.indexOf("=");
+                        var accountId = evt.data.substring(separatorIndex + 1, evt.data.length);
+                        
+                        var salesforceHost = window.location.host;
+                        var latticeForLeadsPrefix = salesforceHost.indexOf("latticeforleads.");
+                        if (latticeForLeadsPrefix !== -1) {
+                            salesforceHost = salesforceHost.substring(16, salesforceHost.length);
+                        }
+                        
+                        var accountDfd = LatticeCommon.getRemoteItem(
+                            '{!$RemoteAction.LatticeLeadListController.getAccountLinkField}',
+                            accountId
+                        );
+                        $.when(accountDfd).then(function (result) {
+                            var accountField = result;
+                            var salesprismUrl = window.location.protocol + "//salesprism." + salesforceHost +
+                                "/apex/salesPRISM?sfdc.tabName=salesPRISM&Account=" + accountField;
+                            window.open(salesprismUrl, "_blank");
+                        });
+                    }
+                }, false);
+            }
+        });
+        
+        new LatticeOpportunityMainControl('body');
+  </script>
+</apex:page>

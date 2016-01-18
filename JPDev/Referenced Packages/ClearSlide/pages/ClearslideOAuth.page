@@ -1,0 +1,62 @@
+<apex:page Controller="CLS4SF.OAuthController" sidebar="false" tabStyle="ClearSlide_Setup__tab" action="{!checkauthed}">
+    <apex:form >
+    <apex:outputPanel layout="block" id="OAuthPanel" style="text-align:center;font-family:Arial;font-size:18px;">
+        <br/>
+        <apex:image id="logo" value="{!$Resource.CLS4SF__Logo}" />
+        <br/>
+        <br/>
+        <apex:outputText value="{!$Label.cls4sf__Config_Copy_Top} "/>
+        <apex:outputLink value="https://www.clearslide.com/freetrial?wtag=SFMP" target="_blank">Click here</apex:outputLink>
+        <apex:outputText value=" to start a free trial."/><br/><br/>
+        <apex:outputText value="{!$Label.cls4sf__Config_Copy_Bottom}"/>
+        <br/><br/>
+        <apex:commandButton value="Configure ClearSlide Integration" action="{!connect}" rerender="instr"/><br/><br/> 
+        <!--apex:commandButton value="Configure i.clearslideng.com Integration" action="{!iconnect}" rerender="instr"/--><br/><br/> 
+        <!--apex:commandButton value="Configure Staging Integration" action="{!sconnect}" rerender="instr"/-->
+   </apex:outputPanel>
+   <apex:outputPanel id="instr" rendered="{!authed}" layout="block" style="text-align:center;font-family:Arial;font-size:18px;">
+   <html><body>
+   <p class="c0">
+   <span><b>Once you've connected to ClearSlide, please follow the steps below to set up Email Pitch and Live Pitch buttons across Salesforce.</b></span><br/><br/>
+   <span>1. Click Setup to configure Page Layouts for Campaigns, Leads, Accounts, Contacts, and Opportunities</span></p>
+   <p class="c0">
+   <span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 62.67px;">
+   <apex:image url="{!URLFOR($Resource.images,
+                  'images/image06.png')}" style="width: 624.00px; height: 62.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""/></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0">
+   <span>2. Edit the Page Layout of each of these objects as shown below and drag the "Email Pitch" and/or the "Live Pitch" button to the Custom Buttons section of the page. This shows the Page Layout for Leads, but make sure you also follow this step for the Page Layouts of Campaigns, Accounts, Contacts, and Opportunities.  Note that the "Live Pitch" button is only available for Leads, Accounts, Contacts, and Opportunities -- not Campaigns.</span></p>
+   <p class="c0"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 576.50px; height: 431.45px;">
+   <apex:image url="{!URLFOR($Resource.images,
+                  "images/image07.png")}" style="width: 576.50px; height: 431.45px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""/></span></p><p class="c0 c1">
+   <span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1">
+   <span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1">
+   <span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1">
+   <span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0"><span>3. For Leads and Contacts, edit your List Views and add Email Pitch as a selected button. This shows the Leads List View, but make sure you also follow this step for the Contacts List View</span></p><p class="c0">
+   <span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 549.50px; height: 427.10px;">
+   <apex:image url="{!URLFOR($Resource.images,
+                  "images/image03.png")}" style="width: 549.50px; height: 427.10px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""/></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1">
+   <span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1">
+   <span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1">
+   <span></span></p><p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p>
+   <p class="c0 c1"><span></span></p><p class="c0 c1"><span></span></p><p class="c0">
+   <span>4. Select "Email Pitch" from Available Buttons and click the right arrow to move it to Select Buttons</span></p><p class="c0">
+   <span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 346.90px; height: 512.50px;">
+   <apex:image url="{!URLFOR($Resource.images,
+                  "images/image04.png")}" style="width: 346.90px; height: 512.50px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""/></span></p><p class="c0 c1">
+   <span></span></p><p class="c0">
+   <span>You should now have an "Email Pitch" and "Live Pitch" buttons on the Leads, Accounts, Contacts, and Opportunities Page Layouts, as well as the "Email Pitch" button on Campaigns and the Leads and Contacts List Views.</span></p></body></html>
+   </apex:outputPanel>
+</apex:form>
+</apex:page>

@@ -1,0 +1,226 @@
+<apex:page controller="LearningTabContentController">
+
+    <apex:includeScript value="{!URLFOR($Resource.LearningTabResources, 'jQuery/js/jquery-1.7.2.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.LearningTabResources, 'jQuery/js/jquery-ui-1.8.20.custom.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.LearningTabResources, 'jQuery/css/ui-lightness/jquery-ui-1.8.16.custom.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.LearningTabResources, 'jQuery/css/smoothness/jquery-ui-1.8.20.custom.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.LearningTabResources, 'jqPlugin/jquery.blockUI.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.LearningTabResources, 'fancybox/jquery.fancybox-1.3.4.pack.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.LearningTabResources, 'fancybox/jquery.fancybox-1.3.4.css')}"/>
+
+<style>
+    #learning_app h1 {font-size: 1.5em; margin-top:25px;margin-bottom:10px;}
+    #feedback { font-size: 1.4em; }
+    #selectable .ui-selecting { background: #FECA40; }
+    #selectable .ui-selected { background: #F39814; color: white; }
+    #selectable { list-style-type: none; margin: 0; padding: 0; }
+    #selectable li { margin: 3px; padding: 1px;width: 90%; height:100; font-size: 1em;font-weight:bold; padding: 10px;}
+    #category {width:95%;font-size:100%;}
+    #category a{text-decoration:none;}
+    #category li { list-style-type: none; margin: 0; padding: 0; margin: 3px; padding: 1px;width: 90%; height:100; font-size: 1em;font-weight:bold; padding: 10px;}
+
+    .span{display:inline-block;width:60%;}
+    /*.con_category {font-size: 1.2em;text-align:left; padding: 10px;padding-left:0px;clear:both;}*/
+    .con_title{color:#666;font-weight:bold;cursor:pointer;}
+    .con_preview{color:#3495c1;cursor:pointer;}
+    .con_detail{color:#3495c1;}
+    .content_item {color:#666;font-weight:normal; margin-bottom:10px;padding-left:10px;clear:both;}
+    .con_length{display:inline-block;text-align:right;float:right;}
+
+    .main-tab-panel {width:86%;max-width:600px;min-height:900px;}
+    .learning_app_recommended_panel {margin-left:620px; margin-top:50px;min-width:250px;width:34%;border: none;
+        border-radius: 5px; padding:5px;font-size:90%;margin-right:15px;min-height:700px;}
+
+    /* imported from old recommended component */
+    .video-list-item {border:1px solid white; clear:both; height:90px;}
+    /*
+    .learning_length {
+        background-color: #666666;
+        color: white;
+        display: inline;
+        left: -10px;
+        margin-left: -50px;
+        margin-top: -35px;
+        position: relative;
+        top: -5px;
+        }
+    */
+    .content-sketch {margin-top:4px; margin-left:125px;color:#666;}
+    .content-sketch > .learning_asset_title {font-weight:bold;font-size:100%;font-family:tahoma;text-decoration:none;}
+    .content-sketch > .learning_asset_title > a {text-decoration:none;color:#666;}
+
+
+</style>
+
+
+<apex:pageBlock >
+    <apex:sectionHeader id="training_Panel" title="Support" subtitle="Learning Resources" help="resources.html" description="Resources for making the most of your selling time."/>
+
+    <div id="learning_app">
+        <div id="tabs">
+            <ul>
+                <li><a href="#tabs-1">Training Material</a></li>
+                <li><a href="#tabs-2">Support</a></li>
+
+            </ul>
+
+            <!-- ----------------------------------------- -->
+            <div id="tabs-1">
+
+                <div class="main-tab-panel">
+                    <h1>Training Links</h1>
+                    <p class="pageSubtitle">Please consult the learning materials found in SharePoint utilizing the link provided and the "Help/Training" link in the upper right-hand area of the Client Connect screen.</p>
+                    <apex:outputPanel >
+                        <ul>
+                            <li><a href="http://portal/Training/all_employees/default.aspx">All Employees</a></li>
+                            <li><a href="http://portal/Training/customer_support/default.aspx">Customer Support</a></li>
+                            <li><a href="http://portal/Training/human_resources/default.aspx">Human Resources</a></li>
+                            <li><a href="http://portal/Training/information_technology/default.aspx">Information Technology</a></li>
+                            <li><a href="http://portal/Training/marketing/default.aspx">Marketing</a></li>
+                            <li><a href="http://portal/Training/sales/default.aspx">Sales</a></li>
+                            <li><a href="http://portal/Training/shared_sevices/default.aspx">Shared Services</a></li>
+                        </ul>
+                    </apex:outputPanel>
+                </div>
+            </div>
+
+            <!-- ----------------------------------------- -->
+            <div id="tabs-2">
+                <!--
+                <div class="main-tab-panel">
+                    <h1>Tell us what you think</h1>
+                    <p>Reminder - you're sharing with anyone in the company who is a member of the feedback group.
+                        If you want to communicate one-on-one, send an email to chatter_feedback@big_co.com</p>
+
+                      <chatter:feed entityId="0F9K00000004DAl" />
+                </div>
+                -->
+                <div class="main-tab-panel" style="margin-top:0px;">
+                    <h1>Sign-on/Permissions/Performance Support</h1>
+                    <p>For sign-on/log-in authorization, permission access, or software performance questions, please contact the IT Service Desk at:</p>
+                    <apex:outputPanel >
+                        <ul>
+                            <li>Phone: (515) 313-2288</li>
+                            <li>Email: <a href="mailto:servicedesk@dice.com">servicedesk@dice.com</a></li>
+                        </ul>
+                    </apex:outputPanel>
+                    <h1>Process/Procedure/Training Support</h1>
+                    <p>For process, procedure, or training questions, please contact a Client Connect Super User/Peer Support Team Member for your area.</p>
+                </div>
+                <div class="learning_app_recommended_panel" id="Guide_panel">
+                    <br />
+                </div>
+            </div> <!-- end tab 5-->
+            <!-- -----------------------------------------  -->
+        </div><!-- tabs -->
+    </div>  <!-- learning app div -->
+</apex:pageBlock>
+
+<script>
+    $j = jQuery.noConflict();
+
+    $j(document).ready(function(){
+
+        $j(function() {
+            $j( ".accordion" ).accordion({header:'ol', collapsible: true, fillSpace: true, clearStyle: true, active:false});
+        });
+
+
+        $j(function() {
+            $j( "#tabs" ).tabs();
+        });
+
+
+        $j(".con_preview").click(function(event){
+            var index = ($j( ".con_preview" ).index(this));
+            showDetails(index);
+        });
+        
+        /* Added onComplete Event to show Loading image */
+        $j("a.iframe").fancybox({
+            'transitionIn'  :   'elastic',
+            'transitionOut' :   'elastic',
+            'speedIn'       :   600,
+            'speedOut'      :   200,
+            'width'      :  1280,
+            'height'      :  720,
+            'overlayShow'   :   true,
+            'onComplete': function(){
+                    $j.fancybox.showActivity();
+                    $j('#fancybox-content').css('z-index', '-1');
+                    $j('#fancybox-frame').load(function(){
+                        $j.fancybox.hideActivity();
+                        $j('#fancybox-content').css('z-index', '0');
+                    });
+                 }
+         });
+
+        $j(".task_name").click(function () { //toggle task steps
+            $j(".task_steps", (this)).slideToggle("fast");
+        });
+        $j("#showAll").click(function () { //show all tasks when link is clicked
+            $j(".task_steps").show("fast");
+        });
+        $j("#hideAll").click(function () { //hide all tasks when link is clicked
+            $j(".task_steps").hide("fast");
+        });
+
+    });
+
+
+
+    function openHover(){
+
+        $j("#hover").dialog({
+            autoOpen: true,
+            modal: true,
+            width: 650,
+            height:600,
+            position: 'center',
+            show: null
+        });
+
+        return false;
+    }
+
+    function closeHover(){
+
+        $j(".ui-dialog-content").dialog("close");
+        return false;
+    }
+
+    function BlockUI(){
+        $j.blockUI({ message: '<img src="{!URLFOR($Resource.LearningTabResources, 'images/busy.gif')}" />',
+            css: {
+                position: 'center',
+                width: '15%',
+                height: '15%',
+                border: 'none',
+                padding: '5px',
+                opacity: .9,
+            }
+        });
+        return false;
+    }
+
+    function UnblockUI(){
+        $j.unblockUI();
+    }
+
+
+    $j(".video-list-item").mouseover(function () {
+        $j(this).css('cursor', 'pointer');
+        $j(this).css('background-color', '#eee')
+        $j(this).css('border', 'solid 1px #ccc')
+    });
+    $j(".video-list-item").mouseout(function () {
+        $j(this).css('cursor', 'normal');
+        $j(this).css('background-color', '#fff')
+        $j(this).css('border', 'solid 1px #fff')
+    });
+
+
+
+</script>
+
+</apex:page>

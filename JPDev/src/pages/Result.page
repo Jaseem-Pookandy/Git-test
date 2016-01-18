@@ -1,0 +1,76 @@
+<apex:page showHeader="false" standardStylesheets="true" controller="ResultController" >
+
+	<head>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<apex:includeScript value="{!URLFOR($Resource.jqueryui, '/js/jquery-1.10.2.js')}"/>
+		<apex:includeScript value="{!URLFOR($Resource.jqueryui, '/js/jquery.maskedinput.min.js')}"/>
+
+		<apex:includeScript value="{!URLFOR($Resource.bootstrap334, 'js/bootstrap.min.js')}"/>
+		<apex:stylesheet value="{!URLFOR($Resource.bootstrap334, 'css/bootstrap.min.css')}" />
+		<apex:stylesheet value="{!URLFOR($Resource.bootstrap334, 'css/bootstrap-theme.min.css')}" />	
+    
+	</head>	
+
+	<apex:composition template="{!$Site.Template}">
+
+		<apex:define name="body">
+
+			<div class="container-fluid">
+
+				<br/>		
+				<br/>
+				<br/>		
+
+				<apex:outputPanel id="errorMessages">
+		        	<apex:outputPanel rendered="{!errors.size > 0}" >
+						<table id="message" align="center" class="table table-condensed">
+							<apex:repeat value="{!errors}" var="err">
+								<tr class="danger">
+					            	<td style="text-align: center;">
+					            		<apex:outputText escape="false" value="{!err}" />
+		                    		</td>
+		                    	</tr>
+		                	</apex:repeat>						    
+						</table>   
+					</apex:outputPanel>
+				</apex:outputPanel>
+
+		        <br/>
+		        <br/>
+				<br/>
+
+				<apex:outputPanel id="infoMessages">
+		        	<apex:outputPanel rendered="{!messageToUser != ''}" >
+						<table id="message" align="center" class="table table-condensed">
+						    <tr class="info">
+					            <td style="text-align: center;">
+					            	<apex:outputText escape="false" value="{!messageToUser}"/>
+					            </td>
+					        </tr>
+						</table>   
+					</apex:outputPanel>
+				</apex:outputPanel>
+	        </div>
+
+	        <br/><br/>	      
+
+			<div style="text-align:center">
+				<apex:outputPanel rendered="{!messageToUser == ''}">
+					<br/>
+					<br/>
+					<!-- fr in the parameter below is an indicated to force javascript to do a full reload/refresh so the user retrieves a new HMAC token
+					and the browser doesn't attempt to use the cache. -->
+					<input type="button" id="tryAgain" name="tryAgain" class="btn-primary" style="width: 150px; maring: 0 auto;" value="Try Again" onclick="window.location.href='/RemittanceManagement?auth={!authTokenURLEncoded}&fr='+ Math.random();" />
+					<br/>
+					<br/>
+					<br/>
+					<br/>
+					<br/>
+					<br/>
+				</apex:outputPanel>
+			</div>   
+		</apex:define>
+	</apex:composition>
+</apex:page>

@@ -1,0 +1,22 @@
+<apex:component controller="LearningTabContentController" > 
+    <apex:attribute name="myContentType" description="This is the type of content for the component." type="String" required="true" assignTo="{!myContentType}"/>
+	<div id="{!myContentType}_TabHighlight">
+     <script> 
+     // writes out the highlighted videos on the indicated tab
+        
+        var contentJson = {!highlight}; //str initialized in controller Content_List_con
+        if (null != contentJson) {
+            var output = '';
+            var mainContainer = $('#{!myContentType}_TabHighlight');
+            for (i=0;i<contentJson.length;i++) {
+                //if myContentType is 'frontPage' don't show the "featured" line...
+                if ('{!myContentType}' != 'frontPage') {
+                    mainContainer.append('<p><b>Featured {!myContentType} - ' + contentJson[i].Content_Title__c + '</b></p>');
+                }
+                mainContainer.append('<p> <iframe frameborder="1" height="349" src="'+contentJson[i].Content_URI__c + '" width="560"></iframe> </p>');
+            }
+            
+        }
+    </script>
+    </div>
+</apex:component>

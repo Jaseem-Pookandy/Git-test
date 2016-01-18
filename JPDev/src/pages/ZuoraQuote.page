@@ -1,0 +1,1018 @@
+<apex:page standardController="zqu__Quote__c" extensions="ZuoraQuoteController" showHeader="true" tabStyle="Zuora__CustomerAccount__c" action="{!KickFromEditIfReadOnly}" id="QuoteVisualforcePage">
+
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/js/jquery-1.10.2.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/js/jquery-ui-1.10.4.custom.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/css/redmond/jquery-ui-1.10.4.custom.min.css')}"/>
+
+    <script type="text/javascript">
+
+        function getParameterByName(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }   
+
+        var ValidQuote;   //with the function instantiated up here, outside the jQuery scope, it can be called from javascript.    
+        var ValidProducts;   //with the function instantiated up here, outside the jQuery scope, it can be called from javascript.    
+        var ReturnToQuote;
+        var CollapseProducts;
+
+        var $j = jQuery.noConflict();
+
+        $j(document).ready(function($) {            
+            
+            if (getParameterByName('Products') == "Y") {
+                $j("#accPanels").accordion({ active: 1});
+            } else {
+                $j("#accPanels").accordion({ active: 0});
+            }
+
+            ReturnToQuote = function() {
+                $("#accPanels").accordion("option", "active", 0);       //always the first index
+            }
+
+            CollapseProducts = function(scroll) {
+                twistSection(document.getElementById('QuoteVisualforcePage:quoteForm:pbProductSelection:foundRatePlans').childNodes[0].childNodes[0]);
+                if (scroll) window.scrollTo(0,240);
+            }
+    
+            //Once the Quote is valid, expand the next section, Product Selection
+            ValidQuote = function() {
+                var activeIndex = $("#accPanels").accordion("option", "active");
+                $("#accPanels").accordion("option", "active", activeIndex + 1);
+
+                //Collapse the matching products IF the user hit 'Continue & Select Products' from a Quote that previously existed!
+                var isInEditMode = '{!pageIsInEditMode}';
+                if (isInEditMode == 'true') {
+                    CollapseProducts(false);
+                }
+            }
+
+            ValidProducts = function() {
+                $("#accPanels").accordion("option", "active", 1);
+            }
+        });
+
+        function disableEnterKey(e) {
+             var key;
+
+             if(window.event) key = window.event.keyCode;     //IE
+             else key = e.which;     //firefox
+
+             if (key == 13) return false;
+             else return true;
+        }
+
+        function SubmitThisSucker (objSubmitBtn) {
+            
+            //Used by the 'Save Everything' button
+
+            //This coincides with the actionFunction a few lines down to both save the form, but primarly to disable the button on click.
+            //The actionStatus solution mentioned here:  http://salesforce.stackexchange.com/questions/7729/disable-commandbutton-after-first-click-to-prevent-double-submission
+            //has nasty results, primarily what seems to be double-submitting which changes causes unexpected data from the triggers, so we've got to do it this way.
+
+            objSubmitBtn.disabled = true;
+            objSubmitBtn.value = 'Submitting...';
+            SubmitQuoteAndEverything();
+        }
+
+        function SubmitJustTheQuote (objSubmitBtn) {
+            
+            //Used by the 'Save without Products' button
+
+            //This coincides with the actionFunction a few lines down to both save the form, but primarly to disable the button on click.
+            //The actionStatus solution mentioned here:  http://salesforce.stackexchange.com/questions/7729/disable-commandbutton-after-first-click-to-prevent-double-submission
+            //has nasty results, primarily what seems to be double-submitting which changes causes unexpected data from the triggers, so we've got to do it this way.
+
+            objSubmitBtn.disabled = true;
+            objSubmitBtn.value = 'Submitting...';
+            SubmitQuoteOnly();
+        }        
+
+        function ResetSubmitEverything() {
+            document.getElementById('submitEverythingButton').value = 'Save Everything';
+            document.getElementById('submitEverythingButton').disabled = false;
+        }
+
+    </script>
+
+    <style type="text/css">
+        .wideTextbox { width: 300px; }
+        .superWideTextbox { width: 600px; }
+
+        .DHX_AttributeLabel {
+            font-size: 11px !important;
+            font-weight: bold;
+            display: block;
+            text-align: right;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            color: rgb(74, 74, 86) !important;           
+            padding-right: 10px !important;
+            vertical-align: middle !important;
+        }
+
+        .DHX_Label {
+            font-size: 100%;
+            font-weight: bold;
+            display: block;
+            text-align: right;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            padding-right: 10px;
+            vertical-align: middle !important;
+        }
+
+        .DHX_ChargeLabel {
+            font-size: 100%;
+            font-weight: bold;
+            display: block;
+            text-align: left;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            padding-right: 10px;
+            padding-left:  15px;
+        }        
+
+        .DHX_Data {
+            font-size: 12px;
+            font-weight: normal;
+            /*display: block; */
+            text-align: left;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            vertical-align: middle !important;
+            width: 85% !important;
+        }  
+
+        .DHX_DiscountIndicator {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: left;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            vertical-align: middle !important;
+            color: rgb(46, 139, 87) !important; 
+            width: 10px !important; 
+        }         
+
+        .DHX_DataRight {
+            font-size: 100%;
+            padding-left: 10px;
+            font-weight: normal;
+            display: block;
+            text-align: right;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            vertical-align: middle !important;
+            width: 85% !important;
+        }          
+
+        .DHX_DataDate {
+            font-size: 100%;            
+            font-weight: normal;
+            text-align: left;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            vertical-align: middle !important;
+            width: 55% !important;
+        }          
+
+        .DHX_RoundedTable {
+            border-radius:10px;
+            border-width: 1px;
+            border-color: #000000;
+            -moz-border-radius:10px;
+            -webkit-border-radius:10px;
+            padding: 1px;
+        }        
+
+        .DHX_Table {
+            padding-left: 10px;
+            padding-right: 10px;
+            border-collapse: collapse;
+        }
+
+        .DHX_QuoteChargeTable {
+            border-radius:10px;
+            -moz-border-radius:10px;
+            -webkit-border-radius:10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            border-width: 1px;
+            border-color: #000000;
+            background-color: #ececec;
+            border-collapse: collapse;
+        }        
+
+        .DHX_QuoteChargeAttributeTable {
+            border-radius:10px;
+            -moz-border-radius:10px;
+            -webkit-border-radius:10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            border-width: 1px;
+            border-color: #000000;
+            border-collapse: collapse;
+        }
+
+        .DHX_QuoteChargeHeaderRight {
+            height: 28px;
+            vertical-align: middle !important;
+            text-align: right;
+        }
+
+        .DHX_QuoteChargeHeader {
+            height: 20px;
+            vertical-align: middle !important;
+
+        }
+
+        .DHX_QuoteChargeLineRow {
+            height: 26px;
+            vertical-align: middle !important;
+        }
+
+    </style>
+    
+    <apex:form id="quoteForm">
+
+        <apex:actionFunction name="SubmitQuoteAndEverything" action="{!SaveItAll}" reRender="pbProductSelection" oncomplete="CollapseProducts(false);" status="disableScreen" /> 
+        <apex:actionFunction name="SubmitQuoteOnly" action="{!SaveQuoteOnly}" reRender="pbQuoteDetails" status="disableScreen" />
+
+        <apex:actionstatus id="disableScreen">
+            <apex:facet name="start">
+                <div class="waitingSearchDiv" id="el_loading" style="background-color: rgba(0, 0, 0, 0.5); height:100%; width:100%; z-index: 9998; left: 0; top: 0; position: fixed;"> 
+                    <div class="waitingHolder" style="top: 300px; width: 200px; height:80px; border-radius: 25px; border: 2px solid #000000; background-color:#FFFFFF; z-index:9999; text-align: center; padding: 5px;">
+                        <br/>
+                        <img class="waitingImage" src="/img/loading.gif" />
+                        <br/><br/>
+                        <span><strong>Processing...</strong></span>
+                    </div>
+                </div>
+            </apex:facet>
+            <apex:facet name="stop">
+            </apex:facet>
+        </apex:actionstatus>
+
+        <div id="accPanels">
+            <h3>Quote Details</h3>
+            <div>
+                <apex:pageBlock rendered="{!isOppLockedForApproval == true}">
+                    <apex:pageBlockButtons >
+                        <apex:commandButton action="{!ReturnToQuote}" value="Return to Quote" />
+                        <apex:commandButton action="{!ReturnToOpp}" value="Return to Opportunity" />
+                    </apex:pageBlockButtons>
+
+                    <apex:outputPanel style="width: 100%;">
+                        <apex:pageMessage severity="error" strength="3" title="You may not edit this quote at this time as the Opportunity is locked for approval.">
+                        </apex:pageMessage>
+                    </apex:outputPanel>
+                </apex:pageBlock>
+
+                <apex:pageBlock id="pbQuoteDetails" rendered="{!isOppLockedForApproval == false}">
+
+                    <apex:outputPanel id="step1Progression">
+                        <apex:outputText rendered="{!successfulStep1}">
+                            <script type="text/javascript">
+                                ValidQuote();            
+                            </script>
+                        </apex:outputText>        
+                    </apex:outputPanel>
+
+                    <apex:outputPanel id="errorMessagesQuoteDetails" style="width: 100%;">
+                        <apex:pageMessage severity="error" strength="3" title="Unable to continue until the following errors are corrected:" rendered="{!errorsQuoteDetails.size > 0}">
+                                <apex:dataList value="{!errorsQuoteDetails}" var="specificError">
+                                    {!specificError}
+                                </apex:dataList>
+                        </apex:pageMessage>
+                    </apex:outputPanel>
+
+                    <apex:pageBlockButtons >
+
+                        <apex:commandButton action="{!ValidateStep1}" value="{!panel1ContinueLabel}" reRender="errorMessagesQuoteDetails, step1Progression, pbProductSelection" status="disableScreen" />
+                        <apex:commandButton value="{!panel1SaveLabel}" onclick="SubmitJustTheQuote(this);" reRender="errorMessagesQuoteDetails" status="disableScreen" />
+                        <apex:commandButton action="{!Cancel}" value="{!panel1CancelLabel}" />
+
+                    </apex:pageBlockButtons>        
+
+                    <apex:pageBlockSection id="quote_details_1" title="Quote Details" collapsible="false" columns="2">
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Quote Name" for="quoteName" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="quoteName" value="{!thisQuote.Name}" required="false" styleClass="wideTextbox" onKeyPress="return disableEnterKey(event)" />  <!-- These actually are required, but I need to do it differently for technical reasons... -->
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Account" for="acct" />
+                            <apex:outputField id="acct" value="{!sourceOpp.AccountId}" />
+                        </apex:pageBlockSectionItem>                  
+
+                        <apex:pageBlockSectionItem rendered="{!userCanChangeBrandTag}">
+                            <apex:outputLabel value="BrandTag" for="brandTagPK" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="brandTagPK" value="{!thisQuote.BrandTag__c}" required="true" > 
+                                        <apex:actionSupport event="onchange" action="{!PopulatePriorBillingAccounts}" reRender="quote_details_billingAccounts" status="disableScreen" />
+                                    </apex:inputField>
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:outputField id="brandTagPK" value="{!thisQuote.BrandTag__c}" rendered="{!userCanChangeBrandTag == false}" />
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Opportunity" for="opp" />
+                            <apex:outputField id="opp" value="{!thisQuote.zqu__Opportunity__c}" />
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem helpText="The Date that the Quote is Valid until" >
+                            <apex:outputLabel value="Valid Until" for="validUntilDT" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="validUntilDT" value="{!thisQuote.zqu__ValidUntil__c}" required="false" onKeyPress="return disableEnterKey(event)" />  <!-- These actually are required, but I need to do it differently for technical reasons... -->
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Opportunity Sold By Partner" for="sbPartner" />
+                            <apex:outputField id="sbPartner" value="{!sourceOpp.Sold_By_Partner__c}" />
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Billing Frequency" for="validUntilDT" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField value="{!thisQuote.Billing_Frequency__c}" required="false" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                    </apex:pageBlockSection>
+
+                    <apex:pageBlockSection id="quote_details_additional" title="Quote Information" collapsible="false" columns="2" rendered="{!pageIsInEditMode}">
+
+                        <!-- This is populated via the zqu__Quote__c.DHX_QuoteInformation_Edit field set.  Change there if necessary. -->
+                        <apex:repeat value="{!$ObjectType.zqu__Quote__c.FieldSets.DHX_QuoteInformation_Edit}" var="f">  
+                            <apex:inputField value="{!thisQuote[f.fieldPath]}" required="{!OR(f.required, f.dbrequired)}" onKeyPress="return disableEnterKey(event)" />
+                        </apex:repeat>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Created By" for="createdBy" />
+                            <apex:outputPanel id="createdBy">
+                                <apex:outputField value="{!thisQuote.CreatedbyId}"/>
+                                &#44;&nbsp;
+                                <apex:outputField value="{!thisQuote.CreatedDate}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Last Modified By" for="lastMod" />
+                            <apex:outputPanel id="lastMod">
+                                <apex:outputField value="{!thisQuote.lastmodifiedbyid}"/>
+                                &#44;&nbsp;
+                                <apex:outputField value="{!thisQuote.lastmodifieddate}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                    </apex:pageBlockSection>
+
+                    <apex:pageBlockSection id="quote_details_Metrics" title="Quote Metrics" collapsible="false" columns="1" rendered="{!pageIsInEditMode}">
+                        <apex:outputField value="{!thisQuote.Charge_Total__c}" />
+                        <apex:outputField value="{!thisQuote.zqu__Previewed_Discount__c}" />
+                        <apex:outputField value="{!thisQuote.zqu__Previewed_Total__c}" />
+                    </apex:pageBlockSection>
+
+                    <apex:pageBlockSection id="quote_details_billingAccounts" title="Prior Bill To Contacts ({!billingAccounts.size})" collapsible="true" columns="1">
+
+                        <apex:outputPanel rendered="{!IF(billingAccounts.size > 0, true, false)}">
+
+                            <apex:outputText value="{!billingAccounts.size} records have been found that match this Quote's BrandTag and Currency." rendered="{!billingAccounts.size > 1}" />
+                            <apex:outputText value="{!billingAccounts.size} record has been found that matches this Quote's BrandTag and Currency." rendered="{!billingAccounts.size == 1}" />
+
+                            <br/><br/>
+
+                            <apex:pageBlockTable value="{!billingAccounts}" var="ba" >
+                                <apex:repeat value="{!$ObjectType.Zuora__CustomerAccount__c.FieldSets.NewQuote}" var="field">  
+                                    <apex:column value="{!ba[field]}" />  
+                                </apex:repeat>                        
+                            </apex:pageBlockTable>
+                        </apex:outputPanel>
+
+                        <apex:outputPanel rendered="{!IF(billingAccounts.size > 0, false, true)}">
+                            <apex:outputText value="No existing Billing Accounts have been found that match this Quote's BrandTag and Currency." />
+                        </apex:outputPanel>                
+
+                    </apex:pageBlockSection>
+
+                    <apex:pageBlockSection id="quote_details_2" title="Account Details" collapsible="false" columns="2" >
+
+                        <apex:pageBlockSectionItem id="contactSectionBillToItem" rendered="{!useThePicklistBillTo}" HelpText="The picklist (dropdown) control displays all contacts for the current Account and the Opportunity's Sold By Partner Account (if populated, users are marked with an *).  If you need to select a contact from a different account, you must use the lookup option.">
+                            <apex:outputLabel value="Bill to Contact" for="billtoContact_ddl" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:selectList id="contact_ddl" value="{!thisQuote.zqu__BillToContact__c}" size="1">
+                                        <apex:selectOptions value="{!contactOptionsBillTo}" />
+                                        <apex:actionSupport event="onchange" reRender="quote_details_2" status="disableScreen"/>
+                                    </apex:selectList>
+                                    &nbsp;&nbsp;<apex:commandButton action="{!SwitcherooBillToClick}" value="{!switcherooLabelBillTo}" id="switcheroo1" rerender="quote_details_2" />
+                                </div>                          
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem helpText="The Contact that is billed for this Quote." rendered="{!useThePicklistBillTo == false}">
+                            <apex:outputLabel value="Bill to Contact" for="billtoContact_lkp" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="billtoContact_lkp" value="{!thisQuote.zqu__BillToContact__c}" required="false" onKeyPress="return disableEnterKey(event)" >  
+                                        <apex:actionSupport event="onchange" reRender="quote_details_2" status="disableScreen"/>
+                                    </apex:inputField>
+                                    &nbsp;&nbsp;<apex:commandButton action="{!SwitcherooBillToClick}" value="{!switcherooLabelBillTo}" id="switcheroo1" rerender="quote_details_2" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem id="contactSectionSoldToItem" rendered="{!useThePicklistSoldTo}" HelpText="The picklist (dropdown) control displays all contacts for the current Account only.  Note that the Opportunity's Sold By Partner Account's Contacts are *not* listed here.  If you need to select a contact from a different account, you must use the lookup option.">
+                            <apex:outputLabel value="Sold to Contact" for="SoldtoContact_ddl" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:selectList id="contact_ddl" value="{!thisQuote.zqu__SoldToContact__c}" size="1" >
+                                        <apex:selectOptions value="{!contactOptionsSoldTo}" />
+                                        <apex:actionSupport event="onchange" action="{!ForceRecalc}" reRender="quote_details_2" status="disableScreen" />
+                                    </apex:selectList>
+                                    &nbsp;&nbsp;<apex:commandButton action="{!SwitcherooSoldToClick}" value="{!switcherooLabelSoldTo}" id="switcheroo2" rerender="quote_details_2" />
+                                </div>                          
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem helpText="The Contact that is sold to for this Quote." rendered="{!useThePicklistSoldTo == false}">
+                            <apex:outputLabel value="Sold to Contact" for="SoldtoContact_lkp" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="SoldtoContact_lkp" value="{!thisQuote.zqu__SoldToContact__c}" required="false" onKeyPress="return disableEnterKey(event)" >  
+                                        <apex:actionSupport event="onchange" action="{!ForceRecalc}" reRender="quote_details_2" status="disableScreen" />
+                                    </apex:inputField>
+                                    &nbsp;&nbsp;<apex:commandButton action="{!SwitcherooSoldToClick}" value="{!switcherooLabelSoldTo}" id="switcheroo2" rerender="quote_details_2" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>            
+
+                        <!-- If we're in the Insert screen, allow Currency to behave normally -->
+                        <apex:pageBlockSectionItem helpText="The Currency the Quote is in." rendered="{!pageIsInEditMode == false}" >
+                            <apex:outputLabel value="Currency" for="currencyField" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="currencyField" value="{!thisQuote.zqu__Currency__c}" required="true" onKeyPress="return disableEnterKey(event)" >
+                                        <apex:actionSupport event="onchange" action="{!PopulatePriorBillingAccountsBecauseCurrencyMayHaveChanged}" reRender="quote_details_billingAccounts, foundRatePlans, charges" status="disableScreen" />
+                                    </apex:inputField>
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <!-- If we're in the Edit screen, Currency will not be able to be changed -->
+                        <apex:outputField id="currencyFieldEdit" value="{!thisQuote.zqu__Currency__c}" rendered="{!pageIsInEditMode == true}" />
+
+                        <apex:pageBlockSectionItem helpText="The Payment Term." >
+                            <apex:outputLabel value="Payment Term" for="paymentTermField" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="paymentTermField" value="{!thisQuote.zqu__PaymentTerm__c}" required="true" onKeyPress="return disableEnterKey(event)" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:inputField value="{!thisQuote.zqu__BillingMethod__c}" />
+
+                        <apex:pageBlockSectionItem helpText="The Payment Method for this Quote." >
+                            <apex:outputLabel value="Payment Method" for="paymentMethodField" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="paymentMethodField" value="{!thisQuote.zqu__PaymentMethod__c}" required="false" onKeyPress="return disableEnterKey(event)" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlocksectionItem rendered="{!QuoteTemplateRegionRequired}">
+                        	<apex:outputlabel value="Quote Template Region"/>
+                        	<apex:outputPanel >
+                        		<div class="requiredInput">
+                        			<div class="requiredBlock"></div>
+                        			<apex:inputfield value="{!thisQuote.Quote_Template_Region__c}"/>
+                        		</div>
+                        	</apex:outputPanel>
+                        </apex:pageBlocksectionItem>
+                    </apex:pageBlockSection>
+
+                    <apex:pageBlockSection id="quote_details_3" title="Subscription Terms" collapsible="false" columns="2">
+
+                        <apex:pageBlockSectionItem helpText="The Date that the Quote Starts" >
+                            <apex:outputLabel value="Service Start Date" for="serviceStartDT" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="serviceStartDT" value="{!thisQuote.zqu__StartDate__c}" required="false" onKeyPress="return disableEnterKey(event)">    <!-- These actually are required, but I need to do it differently for technical reasons... -->
+                                        <apex:actionSupport event="onchange" action="{!CalcServiceEndDateAndAdjustFirstBillDate}" reRender="SED, errorMessagesQuoteCharges, charges, FirstBillDatefield" status="disableScreen" />
+                                    </apex:inputField>
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:inputField id="subTermType" value="{!thisQuote.zqu__Subscription_Term_Type__c}" required="true"  >    
+                            <apex:actionSupport event="onchange" reRender="quote_details_3" action="{!CalcServiceEndDateWipeProducts}" status="disableScreen" />
+                        </apex:inputField>
+                        
+                        <apex:inputField id="SED" value="{!thisQuote.Service_End_Date__c}" onKeyPress="return disableEnterKey(event)"/>
+
+                        <!-- This is the 'First Bill Date' field -->
+                        <apex:inputField id="FirstBillDatefield" value="{!thisQuote.Deferred_Bill_Date__c}" onKeyPress="return disableEnterKey(event)"/>
+
+                        <apex:pageBlockSectionItem helpText="The initial Term of the Quote." rendered="{!IF(thisQuote.zqu__Subscription_Term_Type__c != 'Evergreen', true, false)}" >
+                            <apex:outputLabel value="Initial Term" for="initialTermField" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="initialTermField" value="{!thisQuote.zqu__InitialTerm__c}" required="false" onKeyPress="return disableEnterKey(event)">  <!-- These actually are required, but I need to do it differently for technical reasons... -->
+                                        <apex:actionSupport event="onchange" action="{!CalcServiceEndDate}" reRender="SED, productFilters" status="disableScreen" />
+                                    </apex:inputField>
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>                        
+
+                    </apex:pageBlockSection>
+
+
+                    <apex:pageBlockSection id="quote_details_4" title="Additional Terms" collapsible="false" columns="1">
+                        <apex:inputField value="{!thisQuote.AR_Special_Handling__c}" onKeyPress="return disableEnterKey(event)"/>
+                        <apex:inputField value="{!thisQuote.AR_Special_Notes__c}" style="width: 90% !important; height: 50px" />
+                        <apex:inputField value="{!thisQuote.zqu__Terms__c}" style="width: 90% !important; height: 50px" />
+                        <apex:outputField value="{!thisQuote.CC_Notes__c}" style="width: 90% !important; height: 50px" />
+                    </apex:pageBlockSection>                        
+
+                    <apex:pageBlockSection id="quote_details_5" title="Zuora Account and Subscription Information" collapsible="false" columns="2" rendered="{!pageIsInEditMode && userCanChangeZuoraIDs}">
+                        <apex:inputField value="{!thisQuote.zqu__ZuoraAccountID__c}" style="width: 75% !important;" onKeyPress="return disableEnterKey(event)"/>
+                        <apex:inputField value="{!thisQuote.zqu__ZuoraSubscriptionID__c}" onKeyPress="return disableEnterKey(event)"/>
+                        <apex:inputField value="{!thisQuote.Billing_Account_Selection_Response__c}" style="width: 75% !important;" rendered="{!displayBASR}" onKeyPress="return disableEnterKey(event)"/>                        
+                    </apex:pageBlockSection>
+
+                </apex:pageBlock>
+            </div>
+
+            <h3>Product Selection</h3>
+            <div>
+
+                <apex:pageBlock rendered="{!isOppLockedForApproval == true}">
+                    <apex:pageBlockButtons >
+                        <apex:commandButton action="{!ReturnToQuote}" value="Return to Quote" />
+                        <apex:commandButton action="{!ReturnToOpp}" value="Return to Opportunity" />
+                    </apex:pageBlockButtons>
+
+                    <apex:outputPanel style="width: 100%;">
+                        <apex:pageMessage severity="error" strength="3" title="You may not edit this quote at this time as the Opportunity is locked for approval.">
+                        </apex:pageMessage>
+                    </apex:outputPanel>
+                </apex:pageBlock>
+
+                <apex:pageBlock id="pbProductSelection"  rendered="{!isOppLockedForApproval == false}">
+
+                    <apex:outputPanel id="step2Progression">
+                        <apex:outputText rendered="{!successfulStep2}">
+                            <script type="text/javascript">
+                                ValidProducts();            
+                            </script>
+                        </apex:outputText>        
+                    </apex:outputPanel>
+
+                    <apex:pageBlockButtons id="panel2Buttons" >
+                        <apex:commandButton value="{!panel2EditQuoteLabel}" onclick="ReturnToQuote(); return false;" />  <!-- return false is needed to prevent a postback and page refresh -->
+                        <apex:commandButton id="submitEverythingButton" value="{!panel2SaveLabel}" onclick="SubmitThisSucker(this);" reRender="errorMessagesQuoteCharges, panel2Buttons" status="disableScreen" />
+                        <apex:commandButton action="{!Cancel}" value="{!panel2CancelLabel}" />
+                    </apex:pageBlockButtons>
+
+                    <apex:pageBlockSection id="Filters" title="Filters" collapsible="false" columns="2">
+                        <!-- Filters go here!   -->
+                        <apex:outputPanel id="productFilterPresets" style="wide:95%;">
+
+                            <hr/>
+                            <apex:outputText value="Presets from your Opportunity" style="font-weight:600" />
+                            <hr/>
+
+                            <!-- Because the styling of the pageblockTable didn't fit here we went old school html -->
+                            <table width="100%">
+                                <apex:repeat value="{!filterPresets}" var="filter" id="filterRepeat">
+                                    <tr>
+                                        <td alight="left">
+                                            <apex:outputPanel >                                                
+                                                    <apex:outputPanel rendered="{!filter.rowNum == 1}">
+                                                        <apex:actionsupport action="{!SetFilter}" event="onclick" reRender="productFilters, foundRatePlans" status="disableScreen" >
+                                                            <input name="filterPreset" type="radio" checked="checked" onKeyPress="return disableEnterKey(event)"/>
+                                                            <apex:param name="filterId" value="{!filter.OppLineItem.Id}" assignTo="{!filterId}" />                                                        
+                                                        </apex:actionsupport>
+                                                    </apex:outputPanel>
+
+                                                    <apex:outputPanel rendered="{!filter.rowNum != 1}">
+                                                        <apex:actionsupport action="{!SetFilter}" event="onclick" reRender="productFilters, foundRatePlans" status="disableScreen" >
+                                                            <input name="filterPreset" type="radio" onKeyPress="return disableEnterKey(event)"/>
+                                                            <apex:param name="filterId" value="{!filter.OppLineItem.Id}" assignTo="{!filterId}" />
+                                                        </apex:actionsupport>
+                                                    </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </td>
+                                        <td align="left">
+                                            <apex:outputText value="{!filter.GetOLIBrandTag}" />
+                                        </td>
+                                        <td align="left">
+                                            <apex:outputText value="{!filter.GetOLICountry}" />
+                                        </td>
+                                        <td align="left">
+                                            <apex:outputText value="{!filter.GetOLIProductGroup}" />
+                                        </td>
+                                        <td align="right">
+                                            <apex:outputText value="{!filter.OppLineItem.TotalPrice}" />
+                                        </td>
+                                    </tr>
+                                </apex:repeat>
+                            </table>                            
+                        </apex:outputPanel>
+
+                        <apex:outputPanel id="productFilters" style="wide:95%;">
+
+                            <apex:pageBlockSection id="FiltersWrapper" collapsible="false" columns="1">
+
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="BrandTag" for="brandTagStatus" style="display:block; width:120px; !important;" />
+<!--                                    <apex:outputPanel id="brandTagNStatus">  -->
+                                        <apex:selectList id="brandTagStatus" value="{!brandTagValue}" size="1" style="width:85% !important;">
+                                            <apex:selectOptions value="{!brandTagOptions}" />
+                                            <apex:actionSupport event="onchange" action="{!RefreshFoundRatePlans}" reRender="foundRatePlans" status="disableScreen" />    
+                                        </apex:selectList>
+<!--                                        &nbsp;&nbsp;
+                                        <apex:actionStatus id="disableScreen" >
+                                            <apex:facet name="start">
+                                                <apex:outputPanel >
+                                                    <apex:image value="{!URLFOR($Resource.loading_small)}" alt="Please wait..." title="Please wait..."/>
+                                                </apex:outputPanel>
+                                            </apex:facet>
+                                            <apex:facet name="stop">
+                                            </apex:facet>
+                                        </apex:actionStatus> -->
+<!--                                    </apex:outputPanel>  -->
+                                </apex:pageBlockSectionItem>
+
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Product Group" for="productGroupStatus" style="display:block; width:120px; !important;" />
+                                    <apex:selectList id="productGroupStatus" value="{!productGroupValue}" size="1" style="width:85% !important;">
+                                        <apex:selectOptions value="{!productGroupOptions}" />
+                                        <apex:actionSupport event="onchange" action="{!RefreshFoundRatePlans}" reRender="foundRatePlans" status="disableScreen" />    
+                                    </apex:selectList>
+                                </apex:pageBlockSectionItem>
+
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Billing Frequency" for="billingFrequencyStatus" style="display:block; width:120px; !important;" />
+                                    <apex:selectList id="billingFrequencyStatus" value="{!billingFrequencyValue}" size="1" style="width:85% !important;">
+                                        <apex:selectOptions value="{!billingFrequencyOptions}" />
+                                        <apex:actionSupport event="onchange" action="{!RefreshFoundRatePlans}" reRender="recurringStatus, foundRatePlans" status="disableScreen" />    
+                                    </apex:selectList>
+                                </apex:pageBlockSectionItem>
+
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Pricing Model" for="pricingModelStatus" style="display:block; width:120px; !important;" />
+                                    <apex:selectList id="pricingModelStatus" value="{!pricingModelValue}" size="1" style="width:85% !important;">
+                                        <apex:selectOptions value="{!pricingModelOptions}" />
+                                        <apex:actionSupport event="onchange" action="{!RefreshFoundRatePlans}" reRender="foundRatePlans" status="disableScreen" />    
+                                    </apex:selectList>
+                                </apex:pageBlockSectionItem>
+
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Sale Type" for="saleTypeStatus" style="display:block; width:120px; !important;" />
+                                    <apex:selectList id="saleTypeStatus" value="{!saleTypeValue}" size="1" style="width:85% !important;">
+                                        <apex:selectOptions value="{!saleTypeOptions}" />
+                                        <apex:actionSupport event="onchange" action="{!SaleTypeValueChanged}" reRender="foundRatePlans" status="disableScreen" />    
+                                    </apex:selectList>
+                                </apex:pageBlockSectionItem>
+
+                            </apex:pageBlockSection>
+                        </apex:outputPanel>
+                    </apex:pageBlockSection>
+
+                    <apex:pageBlockSection id="foundRatePlans" title="Matching Results ({!resultCount})" collapsible="true" columns="1">
+
+                        <apex:pageBlockTable id="foundRatePlanRows" value="{!foundRatePlans}" var="plans" rowClasses="odd, even" style="tableClass" rendered="{!foundRatePlans.size > 0}">
+                            <apex:column >
+                                <apex:facet name="header"></apex:facet>
+                                <apex:commandButton value="{!addButtonText}" action="{!AddProductRatePlan}" onclick="CollapseProducts(true);" rerender="charges, quoteTotals, productFilters, foundRatePlanRows" status="disableScreen">
+                                    <apex:param value="{!plans.Id}" name="PRPToAdd" />
+                                </apex:commandButton>
+                            </apex:column>
+
+                            <apex:column >
+                                <apex:facet name="header">Product</apex:facet>
+                                <apex:outputText value="{!plans.zqu__ZProduct__r.Name}" rendered="{!currentUser.Profile.Name != 'System Administrator'}" />
+                                <apex:outputlink value="/{!plans.zqu__ZProduct__r.Id}" rendered="{!currentUser.Profile.Name == 'System Administrator'}" >{!plans.zqu__ZProduct__r.Name}</apex:outputlink>
+                            </apex:column>
+
+                            <apex:column >
+                                <apex:facet name="header">Rate Plan</apex:facet>
+                                <apex:outputText value="{!plans.Name}"  rendered="{!currentUser.Profile.Name != 'System Administrator'}" />
+                                <apex:outputlink value="/{!plans.Id}" rendered="{!currentUser.Profile.Name == 'System Administrator'}" >{!plans.Name}</apex:outputlink>
+                            </apex:column>
+                        </apex:pageBlockTable>
+
+                        <apex:outputText value="No Rate Plans found that match the current filters." rendered="{!foundRatePlans.size < 1}" styleClass="DHX_ChargeLabel" />
+
+                    </apex:pageBlockSection>
+
+                    <apex:actionFunction name="RefreshRatePlans" action="{!RefreshFoundRatePlans}" reRender="foundRatePlans" /> 
+
+                    <apex:pageBlockSection id="quoteTotals" title="Quote Totals" collapsible="false" columns="2">
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Discount Type" styleClass="DHX_Label" />
+                            <apex:selectList id="discountTypeStatus" value="{!discountTypeValue}" size="1" styleClass="DHX_Data">
+                                <apex:actionSupport event="onchange" reRender="quoteTotals" action="{!WipeDiscountValues}" status="disableScreen" />
+                                <apex:selectOptions value="{!discountTypeOptions}" />
+                            </apex:selectList>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Quote Total (Gross)" styleClass="DHX_Label" />
+                            <apex:outputText value="{0, number, ###,###,##0.00}" styleClass="DHX_DataRight" >
+                                <apex:param value="{!quoteTotalGross}" />
+                            </apex:outputText>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Discount (%)" styleClass="DHX_Label" title="{!discountPercentToolTip}" />
+                            <apex:outputPanel >
+                                <apex:inputField id="percentageToDiscount" value="{!thisQuote.Discount_Percent__c}" styleClass="DHX_Data" onKeyPress="return disableEnterKey(event)">
+                                    <apex:actionSupport event="onchange" action="{!RecalcTheQuoteNumbers}" reRender="quoteTotals" status="disableScreen">
+                                        <apex:param name="sourceField" assignTo="{!discountFieldUsed}" value="Discount_Percent__c" />
+                                    </apex:actionSupport>
+                                </apex:inputField>                                        
+                                <apex:outputText value=" *" styleClass="DHX_DiscountIndicator" rendered="{!discountFieldUsed == 'Discount_Percent__c' && thisQuote.Discount_Percent__c != null}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Discount" styleClass="DHX_Label" />
+                            <apex:outputText value="{0, number, ###,###,##0.00}" styleClass="DHX_DataRight" >
+                                <apex:param value="{!quoteTotalDiscount}" />
+                            </apex:outputText>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Discount ($)" styleClass="DHX_Label" />
+                            <apex:outputPanel >
+                                <apex:inputField id="fixedAmountToDiscount" value="{!thisQuote.Discount_Fixed__c}" styleClass="DHX_Data" onKeyPress="return disableEnterKey(event)">
+                                    <apex:actionSupport event="onchange" action="{!RecalcTheQuoteNumbers}" reRender="quoteTotals" status="disableScreen">
+                                        <apex:param name="sourceField" assignTo="{!discountFieldUsed}" value="Discount_Fixed__c" />
+                                    </apex:actionSupport>
+                                </apex:inputField>
+                                <apex:outputText value=" *" styleClass="DHX_DiscountIndicator" rendered="{!discountFieldUsed == 'Discount_Fixed__c' && thisQuote.Discount_Fixed__c != null}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Quote Total (Net)" styleClass="DHX_Label" />
+                            <apex:outputText value="{0, number, ###,###,##0.00}" styleClass="DHX_DataRight" >
+                                <apex:param value="{!quoteTotalNet}" />
+                            </apex:outputText>
+                        </apex:pageBlockSectionItem>   
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Desired Total (Net)" styleClass="DHX_Label" />
+                            <apex:outputPanel >
+                                <apex:inputField id="newNetForDiscount" value="{!thisQuote.Discount_New_Net__c}" styleClass="DHX_Data" onKeyPress="return disableEnterKey(event)">
+                                    <apex:actionSupport event="onchange" action="{!RecalcTheQuoteNumbers}" reRender="quoteTotals" status="disableScreen">
+                                        <apex:param name="sourceField" assignTo="{!discountFieldUsed}" value="Discount_New_Net__c" />
+                                    </apex:actionSupport>
+                                </apex:inputField>
+                                <apex:outputText value=" *" styleClass="DHX_DiscountIndicator" rendered="{!discountFieldUsed == 'Discount_New_Net__c' && thisQuote.Discount_New_Net__c != null}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Estimated First Bill Amt." styleClass="DHX_Label" />
+                            <apex:outputText value="{0, number, ###,###,##0.00}" styleClass="DHX_DataRight" >
+                                <apex:param value="{!thisQuote.First_Bill_Amount__c}" />
+                            </apex:outputText>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Discount Sales Rep" styleClass="DHX_Label" />
+                            <apex:selectList id="salesReponDiscount" value="{!discountSalesRepValue}" size="1" styleClass="DHX_Data">
+                                <apex:selectOptions value="{!discountSalesRepOptions}" />
+                            </apex:selectList>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem />   <!-- Blank space -->
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Discount Country" styleClass="DHX_Label" />
+                            <apex:selectList id="countryDiscount" value="{!discountCountryValue}" size="1" styleClass="DHX_Data">
+                                <apex:selectOptions value="{!discountCountryOptions}" />
+                            </apex:selectList>
+                        </apex:pageBlockSectionItem>
+
+                    </apex:pageBlockSection>
+
+                    <!-- This is here for the header only.  The actual data is outside the pageBlockSection because tables & variables have rendering issues when done inside. -->
+                    <apex:pageBlockSection id="chargesHeaderOnly" title="Quote Charges" collapsible="false" columns="1">
+                    </apex:pageBlockSection>
+
+                    <apex:outputPanel id="errorMessagesQuoteCharges" style="width: 100%;">
+                        <apex:pageMessage severity="error" strength="3" title="Unable to continue until the following errors are corrected:" rendered="{!errorsQuoteCharges.size > 0}">
+                                <apex:dataList value="{!errorsQuoteCharges}" var="specificError">
+                                    {!specificError}
+                                </apex:dataList>
+                        </apex:pageMessage>
+                    </apex:outputPanel>
+
+                    <apex:outputPanel id="charges">
+                        
+                        <apex:variable var="rowNum" value="{!0}"  />
+                        <apex:repeat value="{!selectedRatePlans}" var="s">  
+                            
+                            <apex:outputPanel rendered="{!s.isDiscountProduct == false}">   <!-- We NEVER display the discount rate plans -->
+                                <table width="100%" class="DHX_RoundedTable" style="background-color:{!s.backgroundColor};">
+                                    <apex:variable var="rowNum" value="{!rowNum+1}" />
+                                    <!-- This first TR is the header information which will expose the ZProduct and ProductRatePlan & the delete button. -->
+                                    <tr>
+                                        <td width="100%">
+                                            <table width="100%" class="DHX_Table">
+                                                <tr>
+                                                    <td width="95%" align="left">
+                                                        <table width="100%" class="DHX_Table">
+                                                            <tr>
+                                                                <td width="12%" align="right">
+                                                                    <apex:outputLabel value="Product" styleClass="DHX_Label" />
+                                                                </td>
+                                                                <td width="99%" align="left" >
+                                                                    <apex:outputText value="{!s.productRatePlan.zqu__ZProduct__r.Name}" styleClass="DHX_Data" />
+                                                                </td>                                                                
+                                                            </tr>
+                                                        </table>                                                    
+                                                    </td>
+                                                    <td width="5%" align="right" style="padding-right:10px;">
+                                                        <apex:commandLink style="font-size:12px; font-weight:bold; text-align:center;color:darkred; text-decoration:none;" title="Remove this Rate Plan" value="X" action="{!DeleteProductRatePlanRow}" reRender="charges, quoteTotals, errorMessagesQuoteCharges" status="disableScreen">
+                                                            <apex:param value="{!s.GUID}" name="rowToDelete" />
+                                                        </apex:commandLink>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="width=95%" align="left">
+                                                        <table width="100%" class="DHX_Table">
+                                                            <tr>
+                                                                <td width="12%" align="right" style="padding-top:4px;">
+                                                                    <apex:outputLabel value="Rate Plan" styleClass="DHX_Label" />
+                                                                </td>
+                                                                <td width="38%" align="left" style="padding-top:4px;">
+                                                                    <apex:outputText value="{!s.productRatePlan.Name}" styleClass="DHX_Data" />
+                                                                </td>
+                                                                <td width="1%">
+                                                                    &nbsp;
+                                                                </td>
+                                                                <td width="12%" align="right" style="padding-top:4px;">
+                                                                    <apex:outputLabel value="Sale Type" styleClass="DHX_Label" style="" />
+                                                                </td>
+                                                                <td width="38%" align="left" >
+                                                                    <apex:selectList value="{!s.ratePlanSaleType}" size="1" style="width:40% !important;background-color:rgba(0, 0, 0, 0.0);">
+                                                                        <apex:selectOptions value="{!saleTypeOptions}" />
+                                                                        <apex:actionSupport event="onchange" action="{!PRPSaleTypeValueChanged}" reRender="charges" status="disableScreen">
+                                                                            <apex:param name="prpGUID" assignTo="{!prpGUID}" value="{!s.GUID}" />
+                                                                        </apex:actionSupport>
+                                                                    </apex:selectList>
+                                                                </td>
+                                                            </tr>                                                                
+                                                        </table>
+                                                    </td>
+                                                    <td width="5%" align="right" style="padding-right:6px;">
+                                                        <apex:image value="/img/msg_icons/info16.png" title="{!s.tooltip}" />
+                                                    </td>
+                                                </tr>                                              
+                                            </table>
+                                        </td>                                    
+                                    </tr>
+
+                                    <!-- This second TR will contain ALL The charges -->
+                                    <tr>
+                                        <td>                                        
+                                            <table width="100%" class="DHX_QuoteChargeTable">
+                                                <apex:repeat value="{!s.quoteChargeWrappers}" var="qcw">  
+                                                    <tr>
+                                                        <td width="10%" class="DHX_QuoteChargeHeader">
+                                                            <apex:outputLabel value="Charge" styleClass="DHX_ChargeLabel" />
+                                                        </td>
+                                                        <td width="35%" class="DHX_QuoteChargeHeader">
+                                                            <apex:outputText value="{!qcw.quoteCharge.Name}" styleClass="DHX_Data" />
+                                                        </td>
+                                                        <td width="30%" align="right">
+                                                            &nbsp;
+                                                        </td>
+                                                        <td width="150px" class="DHX_QuoteChargeHeaderRight">
+                                                            <apex:outputLabel value="Charge Line Total" styleClass="DHX_Label" rendered="{!qcw.isDiscountCharge == false}" />
+                                                        </td>
+                                                        <td width="100px" class="DHX_QuoteChargeHeaderRight">
+                                                            <apex:outputText value="{0, number, ###,###,##0.00}" styleClass="DHX_DataRight" rendered="{!qcw.isDiscountCharge == false && qcw.displayChargeLineTotalAsInput == false}">
+                                                                <apex:param value="{!qcw.quoteCharge.zqu__Total__c}" />
+                                                            </apex:outputText>
+
+                                                            <apex:inputField value="{!qcw.quoteCharge.zqu__Total__c}" styleClass="DHX_DataRight" rendered="{!qcw.isDiscountCharge == false && qcw.displayChargeLineTotalAsInput == true}" onKeyPress="return disableEnterKey(event)">
+                                                                <apex:actionSupport event="onchange" status="disableScreen" action="{!RecalculateUnitPrice}" reRender="charges, quoteTotals">
+                                                                    <apex:param name="UnitPriceCalculator" assignTo="{!UnitPriceCalculator}" value="{!'QCTOTAL:' + qcw.GUID}" />
+                                                                </apex:actionSupport>
+                                                            </apex:inputField>                                                            
+                                                        </td>
+                                                    </tr>
+                                                    <!-- This nested TR will contain ALL charge attributes as calculated by the attributeEngine -->
+                                                    <tr>
+                                                        <td colspan="8" align="center">                                                           
+                                                            <table id="chargeAttTable" width="99%" class="DHX_QuoteChargeAttributeTable" style="background-color:{!qcw.backgroundColor};" >
+                                                                <apex:repeat value="{!qcw.QCLines}" var="line" id="QCLines">
+                                                                    <tr>
+                                                                        <apex:repeat value="{!line.attributes}" var="attr">
+                                                                            
+                                                                            <td width="8%" align="right" class="DHX_QuoteChargeLineRow">
+                                                                                <apex:outputLabel value="{!attr.labelText}" styleClass="DHX_AttributeLabel" />
+                                                                            </td>
+                                                                            <td width="17%" align="left" class="DHX_QuoteChargeLineRow">
+                                                                                <!-- Only one of the following controls should ever be rendered PER CHARGE ATTRIBUTE -->
+                                                                                    <apex:outputText value="{!qcw.quoteCharge[attr.APIName]}" styleClass="DHX_Data" rendered="{!attr.control == 'outputText'}" />
+
+                                                                                    <apex:outputText value="{0, number, ###,###,##0.00}" styleClass="DHX_Data" rendered="{!attr.control == 'outputTextCurrency'}" >
+                                                                                        <apex:param value="{!qcw.quoteCharge[attr.APIName]}" />
+                                                                                    </apex:outputText>
+
+                                                                                    <!-- Editable inputField -->
+                                                                                    <apex:outputPanel rendered="{!attr.renderingLogic.isEditable == true && attr.control == 'inputField'}">
+                                                                                        <apex:inputField value="{!qcw.quoteCharge[attr.APIName]}" styleClass="DHX_Data" onKeyPress="return disableEnterKey(event)">
+                                                                                            <apex:actionSupport event="onchange" status="disableScreen" action="{!ProcessDynamicPostbackAction}" reRender="charges, quoteTotals, errorMessagesQuoteCharges" rendered="{!attr.HasPostbackAction}" >
+                                                                                                <apex:param name="DynamicParamName" assignTo="{!DynamicPostbackParam}" value="{!attr.PostbackAction + ':' + qcw.GUID}" />
+                                                                                            </apex:actionSupport>
+                                                                                        </apex:inputField>
+                                                                                    </apex:outputPanel>
+
+                                                                                    <!-- Editable inputFieldDate -->
+                                                                                    <apex:outputPanel rendered="{!attr.renderingLogic.isEditable == true && attr.control == 'inputFieldDate'}">
+                                                                                        <apex:inputField value="{!qcw.quoteCharge[attr.APIName]}" styleClass="DHX_DataDate" onKeyPress="return disableEnterKey(event)">
+                                                                                            <apex:actionSupport event="onchange" status="disableScreen" action="{!ProcessDynamicPostbackAction}" reRender="charges, quoteTotals" rendered="{!attr.HasPostbackAction}" >
+                                                                                                <apex:param name="DynamicParamName" assignTo="{!DynamicPostbackParam}" value="{!attr.PostbackAction + ':' + qcw.GUID}" />
+                                                                                            </apex:actionSupport>
+                                                                                        </apex:inputField>
+                                                                                    </apex:outputPanel>
+
+                                                                                    <!-- Readonly inputField -->
+                                                                                    <apex:outputPanel rendered="{!attr.renderingLogic.isEditable == false && attr.control == 'inputField'}">
+                                                                                        <apex:outputField value="{!qcw.quoteCharge[attr.APIName]}" styleClass="DHX_Data" />
+                                                                                    </apex:outputPanel>
+                                                                                    
+                                                                                    <!-- Editable selectList, selectListEvent -->
+                                                                                    <apex:selectList value="{!qcw.quoteCharge[attr.APIName]}" rendered="{!attr.control == 'SalesRepList' || attr.control == 'selectListEvent'}" size="1" styleClass="DHX_Data" >
+                                                                                        <apex:selectOptions value="{!attr.picklistObjects}" />
+                                                                                        <apex:actionSupport event="onchange" status="disableScreen" action="{!ProcessDynamicPostbackAction}" reRender="charges, quoteTotals" rendered="{!attr.HasPostbackAction}" >
+                                                                                            <apex:param name="DynamicParamName" assignTo="{!DynamicPostbackParam}" value="{!attr.PostbackAction + ':' + qcw.GUID}" />
+                                                                                        </apex:actionSupport>
+                                                                                    </apex:selectList>
+
+                                                                                    <!-- Editable Country -->
+                                                                                    <apex:selectList value="{!qcw.Country}" rendered="{!attr.control == 'Country'}" size="1" styleClass="DHX_Data" >
+                                                                                        <apex:selectOptions value="{!attr.picklistObjects}" />
+                                                                                    </apex:selectList>
+                                                                                <!-- End my 'only one' logic -->
+                                                                            </td>
+                                                                        </apex:repeat>
+                                                                    </tr>
+                                                                </apex:repeat>
+                                                            </table>                                                                                                  
+                                                        </td>
+                                                    </tr>
+                                                </apex:repeat>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>                                
+                            </apex:outputPanel>
+                            <br/>
+                        </apex:repeat>
+                    </apex:outputPanel>
+                </apex:pageBlock>
+            </div>
+        </div>  <!-- accPanels end div -->        
+    </apex:form>
+</apex:page>

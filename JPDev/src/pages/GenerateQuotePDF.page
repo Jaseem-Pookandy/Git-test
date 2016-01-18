@@ -1,0 +1,134 @@
+<apex:page standardController="zqu__Quote__c" extensions="GenerateQuotePDFController" showHeader="false" showChat="false" tabStyle="Zuora__CustomerAccount__c" >
+    <apex:form id="quoteTemplateForm">
+
+        <apex:actionstatus id="disableScreen">
+            <apex:facet name="start">
+                <div class="waitingSearchDiv" id="el_loading" style="background-color: rgba(0, 0, 0, 0.5); height:100%; width:100%; z-index: 9998; left: 0; top: 0; position: fixed;"> 
+                    <div class="waitingHolder" style="top: 200px; width: 200px; height:80px; border-radius: 25px; border: 2px solid #000000; background-color:#FFFFFF; z-index:9999; text-align: center; padding: 5px;">
+                        <br/>
+                        <img class="waitingImage" src="/img/loading.gif" />
+                        <br/><br/>
+                        <span><strong>Processing...</strong></span>
+                    </div>
+                </div>
+            </apex:facet>
+            <apex:facet name="stop">
+            </apex:facet>
+        </apex:actionstatus>
+
+    	<apex:pageBlock id="pageBlock">
+
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton action="{!Cancel}" value="Cancel & Close"   reRender="errorMessagesQuoteDetails, jsWindow"                      status="disableScreen" />
+                <apex:commandButton action="{!PreviewTemplate}" value="Preview" reRender="errorMessagesQuoteDetails, jsWindow, popupWarningWrap"    status="disableScreen" />
+                <apex:commandButton action="{!ConfirmTemplate}" value="Confirm" reRender="errorMessagesQuoteDetails, jsWindow"                      status="disableScreen" />
+            </apex:pageBlockButtons>  
+
+            <apex:outputPanel id="jsWindow" >
+                <apex:outputPanel rendered="{!showPreview}">
+                    <script type="text/javascript">
+                        window.open("{!previewAttachmentURL}", '_blank');
+                    </script>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!closeWindow}">
+                    <script type="text/javascript">
+                        window.close();
+                    </script>
+                </apex:outputPanel>                
+            </apex:outputPanel>
+
+        	<apex:outputPanel id="errorMessagesQuoteDetails" style="width: 100%;">
+        		<apex:pageMessage severity="error" strength="3" title="Uh oh!" rendered="{!errors.size > 0}">
+                    	<apex:dataList value="{!errors}" var="specificError">
+                    		{!specificError}
+                    	</apex:dataList>
+            	</apex:pageMessage>
+            </apex:outputPanel>
+
+    		<apex:pageBlockSection id="filters" title="Quote Template Selection Filters" collapsible="false" columns="2">
+
+    			<apex:pageBlockSectionItem >
+                        <apex:outputLabel value="BrandTag" for="brandTag" />
+                        <apex:outputText id="brandTag" value="{!thisQuote.BrandTag__c}" />
+                </apex:pageBlockSectionItem>
+
+				<apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Language" for="language" />
+                        <apex:selectList id="language" value="{!languageValue}" size="1" >
+                                <apex:selectOptions value="{!languageOptions}" />
+                                <apex:actionSupport event="onchange" action="{!SearchQuoteTemplates}" reRender="templates, errorMessagesQuoteDetails" />    
+                        </apex:selectList>
+                </apex:pageBlockSectionItem>                
+
+				<apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Sold By" for="soldBy" />
+                        <apex:selectList id="soldBy" value="{!soldByValue}" size="1" >
+                                <apex:selectOptions value="{!soldByOptions}" />
+                                <apex:actionSupport event="onchange" action="{!SearchQuoteTemplates}" reRender="templates, errorMessagesQuoteDetails" />    
+                        </apex:selectList>
+                </apex:pageBlockSectionItem>   
+
+				<apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Detail Level" for="detailLevel" />
+                        <apex:selectList id="detailLevel" value="{!detailLevelValue}" size="1" >
+								<apex:selectOptions value="{!detailLevelOptions}" />
+								<apex:actionSupport event="onchange" action="{!SearchQuoteTemplates}" reRender="templates, errorMessagesQuoteDetails" />	
+						</apex:selectList>
+                </apex:pageBlockSectionItem>                   
+
+    		</apex:pageBlockSection>
+
+    		<apex:pageBlockSection id="templates" title="Quote Templates Found" collapsible="false" columns="1">
+
+    			<apex:outputPanel rendered="{!IF(foundTemplatesWrapped.size > 0, true, false)}">
+
+                    <apex:outputText value="{!foundTemplatesWrapped.size} Quote Templates have been found that match the current filters" rendered="{!foundTemplatesWrapped.size > 1}" />
+                    <apex:outputText value="{!foundTemplatesWrapped.size} Quote Template has been found that match the current filters." rendered="{!foundTemplatesWrapped.size == 1}" />
+                    <apex:outputText value="No Quote Templates have been found that match the current filters." rendered="{!foundTemplatesWrapped.size < 1}" />
+
+                    <br/><br/>
+
+                    <apex:pageBlockTable value="{!foundTemplatesWrapped}" var="qt" rowClasses="odd, even" style="tableClass">
+
+                        <apex:column >
+                            <apex:facet name="header">&nbsp;</apex:facet>
+                               
+                            <input name="template" type="radio">
+                                <apex:actionsupport action="{!selectQT}" event="onclick" rerender="errorMessagesQuoteDetails" status="disableScreen">
+                                    <apex:param name="QTID" assignTo="{!QTID}" value="{!qt.QuoteTemplate.zqu__Template_Id__c}">
+                                    </apex:param>
+                                </apex:actionsupport>
+                            </input>
+                                
+                        </apex:column>
+
+<!--                        <apex:column >
+                            <apex:facet name="header">Template Name</apex:facet>
+                            <apex:outputText value="{!qt.QuoteTemplate.zqu__Template_Id__c}" />
+                        </apex:column>
+-->
+                        <apex:column >
+                            <apex:facet name="header">Template Name</apex:facet>
+                            <apex:outputText value="{!qt.QuoteTemplate.Display_Name__c}" />
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Detail Level</apex:facet>
+                            <apex:outputText value="{!qt.QuoteTemplate.Detail_Level__c}" />
+                        </apex:column>
+                    </apex:pageBlockTable>
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{!IF(foundTemplatesWrapped.size > 0, false, true)}">
+                    <apex:outputText value="No matching Quote Templates have been found that match the current filters." />
+                </apex:outputPanel>
+    		</apex:pageBlockSection>
+
+            <apex:outputPanel id="popupWarningWrap" >
+                <apex:outputPanel id="popupWarning" rendered="{!showPreview}">
+                    <p style='text-align:center'><i><strong>Note: If the preview is not visible you must either disable your pop-up blocker or allow an exception for this website.</strong></i></p>
+                </apex:outputPanel>
+            </apex:outputPanel>
+
+    	</apex:pageBlock>
+    </apex:form>
+</apex:page>

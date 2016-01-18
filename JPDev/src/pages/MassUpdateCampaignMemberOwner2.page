@@ -1,0 +1,39 @@
+<apex:page controller="MassUpdateCampMemberController" id="updateOwnerPage">
+    <style>
+      .messageText h4 {
+        color : #cc0000;
+      }
+    </style>
+     <apex:form >
+            <apex:sectionheader title="Change Owner for Campaign Member"/>
+            <apex:pageblock mode="edit">
+            <apex:pagemessages />
+            <apex:pageblocksection title="Change" columns="1">
+                <apex:pageblocksectionitem > 
+                    <apex:outputlabel for="owner">New Owner</apex:outputlabel>
+                    <apex:inputfield id="owner" value="{!camp.Owner_Assigned__c}" required="false" />
+                </apex:pageblocksectionitem>
+            </apex:pageblocksection>
+    
+            <apex:pageblocksection title="Selected Campaign Members" columns="1">
+                <apex:pageMessage escape="false" severity="error" strength="2" title="Error:" summary="Campaign Member must be selected in order to change the owner" rendered="{!ISNULL(selected)}">
+                </apex:pageMessage>
+                <apex:pageblocktable value="{!selected}" var="cm" width="100%"
+                    styleClass="list" rowClasses="dataRow" onRowMouseOver="hiOn(this);" onRowMouseOut="hiOff(this);">
+                    <apex:column >
+                        <apex:facet name="header">Campaign Member</apex:facet>
+                        <apex:outputlink value="\">{!cm.Contact.Name}({!cm.Campaign.Name})</apex:outputlink>
+                    </apex:column>
+                    <apex:column >
+                        <apex:facet name="header">Current Owner</apex:facet>
+                        {!cm.Owner_Assigned__r.Name}
+                    </apex:column>
+                </apex:pageblocktable>
+            </apex:pageblocksection>
+            <apex:pageblockbuttons location="bottom">
+                <apex:commandbutton value="Save" action="{!save}"/>
+                <apex:commandbutton value="Cancel" action="{!cancel}"/>
+            </apex:pageblockbuttons>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

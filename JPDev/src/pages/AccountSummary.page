@@ -1,0 +1,151 @@
+<apex:page standardController="Account" extensions="AccountSummaryController" showHeader="true" tabStyle="Account" >
+
+ 	<apex:sectionHeader title="Account Summary"/>
+
+       <apex:pageBlock id="PageBlock">
+           <apex:pageBlockSection id="act_details_1" title="Account Detail" collapsible="false" columns="2">   	
+            <apex:pageBlockSectionItem >
+	        	<apex:outputLabel value="Account" for="accName" />
+	        	<apex:outputLink id="accName" value="/{!account.Id}">{!account.Name}</apex:outputLink>    	
+	        </apex:pageBlockSectionItem>
+                  		
+       		<apex:outputField value="{!account.Account_Number__c}" />
+       		<apex:pageBlockSectionItem >
+	        	<apex:outputLabel value="Address" for="addressValue" />        
+       			<apex:outputText value="{!account.BillingStreet}  {!account.BillingCity}, {!account.BillingState}    {!account.BillingPostalCode}     {!account.BillingCountry}" />
+       		</apex:pageBlockSectionItem>
+       		<apex:outputField value="{!account.Accounting_Flag__c}" />
+       		<apex:outputField value="{!account.Status__c}" />
+       		<apex:outputField value="{!account.Channel_Partner__c}" />
+       		<apex:outputField value="{!account.Website}" />       		
+       		
+       	</apex:pageBlockSection>      	
+
+	</apex:pageBlock>
+	
+	<apex:pageblock id="brandList" title="Account Brands" tabstyle="Account_Brand__c"  >
+	    <apex:pageBlockTable value="{!account.Account_Brands__r}" var="ab" rendered="{!NOT(ISNULL(account.Account_Brands__r))}"  >
+	        <apex:column value="{!ab.Brand_Picklist__c}"  />
+	        <apex:column value="{!ab.Status__c}"  />
+	        <apex:column value="{!ab.At_Risk__c}"  />
+	        <apex:column value="{!ab.Primary_Owner__c}"  />
+	        <apex:column value="{!ab.CS__c}"  />
+	        <apex:column value="{!ab.Rank__c}"  />
+	        <apex:column value="{!ab.hasNeeds__c}"  />
+	        <apex:column value="{!ab.Market_Segment__c}"  /> 
+	        <apex:column value="{!ab.Active_Users__c}"  /> 
+	        <apex:column value="{!ab.Valid_Thru__c}"  /> 
+		</apex:pageBlockTable>
+	    
+	    <apex:outputLabel value="No Account Brands found" rendered="{!(ISNULL(account.Account_Brands__r))}"   styleClass="noRowsHeader"></apex:outputLabel>    
+	</apex:pageblock>
+
+	<apex:pageblock id="zlineItemList" title="zContract Line Items" tabstyle="Zuora__SubscriptionProductCharge__c"  >
+	    <apex:pageBlockTable value="{!account.Zuora__R00N40000001lGjTEAU__r}" var="zli" rendered="{!NOT(ISNULL(account.Zuora__R00N40000001lGjTEAU__r))}"  >
+	        <apex:column value="{!zli.Name}"  />
+	        <apex:column value="{!zli.Brand__c}"  /> 
+	        <apex:column value="{!zli.Zuora__TotalContractValue__c}"  /> 
+	        <apex:column value="{!zli.Country__c}"  /> 
+	        <apex:column value="{!zli.Zuora__EffectiveStartDate__c}"  /> 
+	        <apex:column value="{!zli.Zuora__EffectiveEndDate__c}"  /> 
+	        <apex:column value="{!zli.Zuora__Subscription__c}"  /> 
+	        <apex:column value="{!zli.Product_Rate_Plan__c}"  /> 
+		</apex:pageBlockTable>
+	    
+	    <apex:outputLabel value="No zContract Line Items found" rendered="{!(ISNULL(account.Zuora__R00N40000001lGjTEAU__r))}"   styleClass="noRowsHeader"></apex:outputLabel>
+	</apex:pageblock>
+
+	<apex:pageblock id="BillingAccounts" title="Billing Accounts" tabstyle="Zuora__CustomerAccount__c"  >
+	    <apex:pageBlockTable value="{!account.Zuora__R00N40000001kyLcEAI__r}" var="ba" rendered="{!NOT(ISNULL(account.Zuora__R00N40000001kyLcEAI__r))}"  >
+
+			<apex:column headerValue="Name">
+          		<apex:outputLink value="/{!ba.Id}">{!ba.Name}</apex:outputLink>
+       		</apex:column>
+
+	        <apex:column value="{!ba.Zuora__BillToName__c}"  /> 
+	        <apex:column value="{!ba.Zuora__BillToWorkEmail__c}"  /> 
+	        <apex:column value="{!ba.Zuora__BillToWorkPhone__c}"  /> 
+	        <apex:column value="{!ba.Full_Bill_To_Address__c}"  /> 
+	        <apex:column value="{!ba.Zuora__SoldToName__c}"  /> 
+		</apex:pageBlockTable>
+	    
+	    <apex:outputLabel value="No zContract Line Items found" rendered="{!(ISNULL(account.Zuora__R00N40000001kyLcEAI__r))}"   styleClass="noRowsHeader"></apex:outputLabel>
+	</apex:pageblock>
+
+
+<!-- 
+   	<apex:pageblock id="contactList" title="Main Contacts" tabstyle="Contact"  >
+	    <apex:pageBlockTable value="{!wrappedContacts}" var="c" rendered="{!NOT(ISNULL(wrappedContacts))}"  >
+	        <apex:column value="{!c.ContactRecord.Name}"  />
+	        <apex:column value="{!c.ContactType_BrandName}"  />
+	        
+	        <apex:repeat value="{!wrappedContacts}" var="blah">
+	        	{!blah.ContactType_BrandName}
+	        </apex:repeat>
+		</apex:pageBlockTable>
+	    
+	    <apex:outputLabel value="No Active Contacts found" rendered="{!(ISNULL(wrappedContacts))}"   styleClass="noRowsHeader"></apex:outputLabel>    
+	</apex:pageblock>
+-->
+
+   	<apex:pageBlock id="wrappedContactList" title="Main Contacts" tabStyle="Contact" >
+   		<table class="list" rendered="{!NOT(ISNULL(wrappedContacts))}"  width="100%" border="0" rules="rows" cellspacing="0" cellpadding="5">
+    		<thead class="rich-table-thead">
+    			<tr class='headerRow'>
+    				<th class='headerRow' scope="col">Name</th>
+    				<th class='headerRow' scope="col">Exact Job Title</th>
+    				<th class='headerRow' scope="col">Email</th>
+    				<th class='headerRow' scope="col">Preferences?</th>
+    				<th class='headerRow' scope="col">Phone</th>
+    				<th class='headerRow' scope="col">Address</th>
+    				<th class="headerRow" scope="col">Brand</th>
+    				<th class='headerRow' scope="col">Type</th></tr>
+    		</thead>
+
+       		<tbody>
+       		<apex:repeat value="{!WrappedContacts}" var="wc">
+       			<tr class="dataRow">
+           			<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"><apex:outputLink value="/{!wc.ContactRecord.Id}">{!wc.ContactRecord.Name}</apex:outputLink></td>
+           			<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"><apex:outputText value="{!wc.ContactRecord.Title}"/></td>
+           			<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"><apex:outputText value="{!wc.ContactRecord.Email}"/></td>
+           			<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"><apex:outputField value="{!wc.ContactRecord.Contact_Preferences_Flag__c}"/></td>
+           			<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"><apex:outputText value="{!wc.ContactRecord.Phone}"/></td>
+           			<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"><apex:outputText value="{!wc.ContactRecord.Full_Mailing_Address__c}"/></td>
+           			<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"></td>
+           			<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"></td>
+       			</tr>
+       			       
+       			<apex:repeat value="{!wc.ContactTypes}" var="wc_ct">
+           			<tr class="dataRow"> 
+           				<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"></td>
+           				<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"></td>
+           				<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"></td>
+           				<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"></td>
+           				<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"></td>
+           				<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''"></td>
+           				<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''">{!wc_ct.Brand_Name__c}</td>
+           				<td class="dataCell" onmousemove="this.parentNode.style.backgroundColor='#E3F3FF'" onmouseout="this.parentNode.style.backgroundColor =''">{!wc_ct.Type__c}</td>
+           			</tr>    
+       			</apex:repeat>
+       			</apex:repeat>
+       		</tbody>
+    	</table>
+    	<apex:outputLabel value="No Active Contacts found" rendered="{!(ISNULL(wrappedContacts))}" styleClass="noRowsHeader"></apex:outputLabel>
+   	</apex:pageBlock>
+   	
+	<apex:pageblock id="productUserList" title="Active Product Users" tabstyle="Product_User__c"  >
+	    <apex:pageBlockTable value="{!ProductUsers}" var="c" rendered="{!NOT(ISNULL(ProductUsers))}"  >
+	    	<apex:column headerValue="Name">
+          		<apex:outputLink value="/{!c.Id}">{!c.Name}</apex:outputLink>
+       		</apex:column>
+	        <apex:column value="{!c.User_Allocations_Active__c}"  />
+	        <apex:column value="{!c.Title}"  />
+	        <apex:column value="{!c.Email}"  />
+	        <apex:column value="{!c.Phone}"  />
+	        <apex:column value="{!c.Full_Mailing_Address__c}"  />
+		</apex:pageBlockTable>
+	    
+	    <apex:outputLabel value="No zContract Line Items found" rendered="{!(ISNULL(account.Zuora__R00N40000001lGjTEAU__r))}"   styleClass="noRowsHeader"></apex:outputLabel>    
+	</apex:pageblock>
+   	
+</apex:page>

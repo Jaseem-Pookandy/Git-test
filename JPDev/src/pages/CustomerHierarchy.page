@@ -1,0 +1,5 @@
+<apex:page standardController="Account" tabStyle="Account" > 
+    <div style="height: 200px" class="bodyDiv" onclick="resizeFrame();">
+        <c:ObjectHierarchyComponent currentObjId="{!Account.id}" parentFieldName="Customer_Parent__c" nodeLabelFields="BillingCity, BillingState,BillingPostalCode, BillingCountry,Account_Number__c,Status__c"/>
+    </div>
+</apex:page>

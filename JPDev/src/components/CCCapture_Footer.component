@@ -1,0 +1,9 @@
+<apex:component >
+    <apex:panelGrid cellpadding="2" cellspacing="0" width="98%" border="0" columns="1" style="text-align: center;" id="theHeader">
+        <a id="privacyLink" title="Click to view privacy policy" href="#" onclick="window.open('http://www.dhigroupinc.com/privacy-policy/default.aspx','_blank','toolbar=yes, scrollbars=yes, resizable=yes, top=10, left=10, width=1000, height=800');">Privacy Policy</a>
+        <br/>
+        <apex:outputText escape="false">Questions? +1 (515) 313-4011 / <a href="mailto:ar@DHIGroupInc.com?Subject=Remittance Management site">ar@DHIGroupInc.com</a></apex:outputText>
+        <apex:outputText >Copyright &copy; DHI Group, Inc. 1990-{!year(today())}. All rights reserved.</apex:outputText>
+        <br/>
+    </apex:panelGrid>
+</apex:component>

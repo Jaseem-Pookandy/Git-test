@@ -1,0 +1,5 @@
+<apex:page standardController="Account" tabStyle="Contact" > 
+
+	<c:ContactTableComponent accID="{!Account.Id}" />
+
+</apex:page>

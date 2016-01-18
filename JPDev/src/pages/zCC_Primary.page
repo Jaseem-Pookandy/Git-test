@@ -1,0 +1,41 @@
+<apex:page controller="zCC_PrimaryController" action="{!onload}"
+    id="zuora_hpm_subpage" sidebar="false" showHeader="false">
+    <apex:includeScript value="{!$Resource.postmessage_js}" />
+    <apex:styleSheet value="{!$Resource.HPMSampleCSS}" />
+    <apex:messages style="font-weight:bold;color:red;"
+        id="error_message_id" />
+
+    <script>
+        var redUrl = '';
+        function onsubmit_action() {
+            submitHostedPage('z_hppm_iframe');
+        }
+        
+        function callbacksuccess(pmid) {
+          redUrl  = "{!$Page.zCC_Confirm}?QID={!quoteID}&pmid=" + pmid; 
+          window.location = redUrl;
+        }
+        
+        function callbackfailure( paramString ) {            
+            var redirUrl = "{!$Page.zCC_Primary}" + paramString + '{!extraParamString}';                
+            window.location = redirUrl;
+        }
+  </script>
+    <apex:form >
+        <apex:actionStatus id="status" starttext="" stopText="" ></apex:actionStatus>
+        <apex:outputPanel id="pg">
+            <!--  CustomSetting:{!HPM_CUSTOM_SETTING} -->
+            <apex:pagemessages />
+        </apex:outputPanel>        
+
+    </apex:form>
+    <apex:outputPanel rendered="{!NOT(hasConfigError)}">
+        <div id="zforce_hpm_frame">
+            <iframe id="z_hppm_iframe" name="z_hppm_iframe" width="100%"
+                height="420" src="{!iframeSrc}" frameborder="0"></iframe>
+            <input type="image" id="btn_submit" onclick="onsubmit_action();"
+                src="{!$Resource.HPMSubmitButton}" />
+        </div>
+    </apex:outputPanel>
+
+</apex:page>

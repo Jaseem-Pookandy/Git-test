@@ -1,0 +1,23 @@
+<apex:page >
+
+
+
+<script type='text/javascript' src='https://c.la8cs.salesforceliveagent.com/content/g/js/34.0/deployment.js'></script>
+<script type='text/javascript'>
+liveagent.init('https://d.la8cs.salesforceliveagent.com/chat', '572U000000005jm', '00DK000000XNRjf');
+</script>
+
+<H2>
+    Unauthenticated Buttons - these buttons will be examples of buttons that initiate chat from users that have NOT authenticated on the Dice.com website.  <br />As of 6/25/15, these buttons find Product User record based on email address entered in the PreChat form.
+    </H2>  
+    
+<br />    
+<H1>Employer Post Jobs</H1>
+<img id="liveagent_button_online_573U000000006Mn" style="display: none; border: 0px none; cursor: pointer" onclick="liveagent.startChat('573U000000006Mn')" src="https://full-dice-holdings.cs9.force.com/chatUA/resource/1435236466000/Online" /><img id="liveagent_button_offline_573U000000006Mn" style="display: none; border: 0px none; " src="https://full-dice-holdings.cs9.force.com/chatUA/resource/1435236458000/Offline" />
+<script type="text/javascript">
+if (!window._laq) { window._laq = []; }
+window._laq.push(function(){liveagent.showWhenOnline('573U000000006Mn', document.getElementById('liveagent_button_online_573U000000006Mn'));
+liveagent.showWhenOffline('573U000000006Mn', document.getElementById('liveagent_button_offline_573U000000006Mn'));
+});</script>
+
+</apex:page>

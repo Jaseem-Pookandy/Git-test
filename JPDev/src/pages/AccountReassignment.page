@@ -1,0 +1,49 @@
+<apex:page controller="LoadAccountReassignmentCSVController">
+    <apex:form >
+        <apex:pagemessages />
+        <apex:pageBlock >
+        <table cellpadding="2" cellspacing="2" width="80%" border="0">
+          <tr>
+              <td style="font-weight:bold;"><apex:inputFile value="{!csvFileBody}"  filename="{!csvAsString}"/></td>
+              <td style="font-weight:bold;"><apex:commandButton value="Load File" action="{!importCSVFile}" disabled="{!isLoad}" /></td>
+              <td style="font-weight:bold;"><apex:commandButton value="Delete File" action="{!deleteCSVFile}" disabled="{!Not(isLoad)}" /></td>
+              <td style="font-weight:bold;"><apex:inputHidden id="uploadFileRef" value="{!uploadFileRef}"/></td>
+              <td style="font-weight:bold;"><apex:commandButton value="Reassign" action="{!redirectToList}" disabled="{!Not(isReassign) }" /></td>
+              <td style="font-weight:bold;"><apex:commandButton value="Review" action="{!reviewList}"/></td>
+          </tr>
+        </table>
+        </apex:pageBlock> 
+        <apex:panelGrid columns="6">
+           <apex:commandLink action="{!first}" rendered="{!setCon.hasPrevious}">First</apex:commandlink>
+           <apex:commandLink action="{!previous}" rendered="{!hasPrevious}">Previous</apex:commandlink>
+           <apex:outputText rendered="{!(setCon.pageNumber * setCon.pageSize) < setCon.ResultSize}" value="{!setCon.pageNumber * setCon.pageSize} Of {!setCon.ResultSize}"></apex:outputText>
+           <apex:outputText rendered="{!(setCon.pageNumber * setCon.pageSize) >= setCon.ResultSize}" value="{!setCon.ResultSize} Of {!setCon.ResultSize}"></apex:outputText>   
+           <apex:commandLink action="{!next}" rendered="{!hasNext}">Next</apex:commandlink>
+           <apex:commandLink action="{!last}" rendered="{!hasNext}">Last</apex:commandlink>
+        </apex:panelGrid>
+        <apex:pageBlock >
+           <apex:pageblocktable value="{!PaginatedAcctList}" var="acct">
+              <apex:column value="{!acct.Uploaded_File_Ref__c}" />
+              <apex:column value="{!acct.Account_Number_Assigned__c}" />
+              <apex:column value="{!acct.AHJRep__c}" />
+              <apex:column value="{!acct.AHJCSR__c}" />
+              <apex:column value="{!acct.CJRep__c}" />
+              <apex:column value="{!acct.CJCSR__c}" />
+              <apex:column value="{!acct.DiceRep__c}" />
+              <apex:column value="{!acct.DiceCSR__c}" />
+              <apex:column value="{!acct.EFCRep__c}" />
+              <apex:column value="{!acct.EFCCSR__c}" />
+              <apex:column value="{!acct.RZRep__c}" />
+              <apex:column value="{!acct.RZCSR__c}" />
+           </apex:pageblocktable>
+        </apex:pageBlock>
+        <apex:panelGrid columns="6">
+           <apex:commandLink action="{!first}" rendered="{!setCon.hasPrevious}">First</apex:commandlink>
+           <apex:commandLink action="{!previous}" rendered="{!hasPrevious}">Previous</apex:commandlink>
+           <apex:outputText rendered="{!(setCon.pageNumber * setCon.pageSize) < setCon.ResultSize}" value="{!setCon.pageNumber * setCon.pageSize} Of {!setCon.ResultSize}"></apex:outputText>
+           <apex:outputText rendered="{!(setCon.pageNumber * setCon.pageSize) >= setCon.ResultSize}" value="{!setCon.ResultSize} Of {!setCon.ResultSize}"></apex:outputText>   
+           <apex:commandLink action="{!next}" rendered="{!hasNext}">Next</apex:commandlink>
+           <apex:commandLink action="{!last}" rendered="{!hasNext}">Last</apex:commandlink>
+        </apex:panelGrid>
+   </apex:form>
+</apex:page>

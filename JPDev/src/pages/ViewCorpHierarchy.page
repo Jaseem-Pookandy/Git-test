@@ -1,0 +1,110 @@
+<apex:page standardController="Account" extensions="ViewCorpHierarchyController" showHeader="true" tabStyle="Account" action="{!PrepPage}">
+
+    <apex:form id="hierarchyPage">
+
+        <apex:SectionHeader title="{!pageHeaderLabel}" />
+
+        <apex:panelGrid columns="2" style="float:right; line-height:2.2em;">    <!-- the line height is to vertically align the label with the select list. -->
+            <!--<apex:outputLabel value="Brand Filter: " /> -->
+            <apex:actionStatus id="status">
+                <apex:facet name="start"><span style="color:red; font-weight:bold; text-align:center">Just a moment...</span></apex:facet>
+                <apex:facet name="stop">Brand Filter: </apex:facet>
+            </apex:actionStatus>            
+            <apex:selectList value="{!currentBrand}" size="1" onchange="redrawPage(this.value);">
+                    <apex:selectOptions value="{!brandOptions}" />                          
+            </apex:selectList>
+        </apex:panelGrid>      
+
+        <apex:pageblock id="PageBlock">
+
+            <apex:outputPanel id="errorMessages" style="width: 100%;">
+                <apex:pageMessage severity="error" strength="3" title="Error displaying the page!" rendered="{!errors.size > 0}">
+                        <apex:dataList value="{!errors}" var="specificError">
+                            {!specificError}
+                        </apex:dataList>
+                </apex:pageMessage>
+            </apex:outputPanel>
+
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!ReturnToAccount}" value="{!returnButtonLabel}" rendered="{!IF(sourceAccountBrandID =='',true,false)}"/>
+                <apex:commandButton action="{!ReturnToAccountBrand}" value="{!returnButtonLabelForAccountBrand}" rendered="{!IF(sourceAccountBrandID != '',true,false)}"/>
+            </apex:pageBlockButtons>
+
+            <apex:actionFunction immediate="true" name="redrawPage" action="{!redrawPage}" reRender="hierarchy, status" status="status" >
+                <apex:param name="firstParam" assignTo="{!currentBrand}" value="" />
+            </apex:actionFunction>
+
+            <apex:pageBlockSection id="hierarchy" collapsible="false" columns="1">                                                          
+                <!--<apex:pageBlockTable value="{!oha.ObjectStructure}" var="a"> -->
+                <apex:pageBlockTable value="{!hierarchyWrapperList}" var="a">
+
+                    <apex:variable var="rowNum" value="{!0}" />                
+
+                    <apex:column >
+                        <apex:repeat value="{!a.thisOHWrapper.levelFlag}" var="flag" first="0">
+                            <apex:image url="/img/tree/empty.gif" height="16" width="20" rendered="{!IF(flag,false,true)}"/>
+                            <apex:image url="/s.gif" alt="" width="3" height="16" rendered="{!IF(flag,true,false)}"/>
+                            <apex:image url="/img/tree/chain.gif" height="16" width="20" rendered="{!IF(flag,true,false)}"/>
+                        </apex:repeat>
+
+                        <apex:facet name="header">Account</apex:facet>
+                        <span height="16" v="top">
+                        <apex:outputText rendered="{!IF(a.thisOHWrapper.nodeType=='start',true,false)}">
+                            <apex:image id="tree_start" url="/img/tree/minusStart.gif" height="16" width="20" title="Click to expand/collapse nested items." onClick="TreeNodeElement.prototype.toggle(this,'{!a.thisOHWrapper.nodeId}')"/>
+                            <apex:image id="Icon_start" url="/img/icon/custom51_100/globe16.png" width="16" height="16" rendered="{!IF(a.thisOHWrapper.currentNode,false,true)}"/>
+                            <apex:image id="Icon_start_current" url="/img/icon/star16.png" width="16" height="16" rendered="{!IF(a.thisOHWrapper.currentNode,true,false)}"/>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(OR(a.thisOHWrapper.nodeType=='parent',a.thisOHWrapper.nodeType=='parent_end'),true,false)}">
+                            <apex:image id="Tree_parent" url="/img/tree/minus.gif" rendered="{!IF(a.thisOHWrapper.nodeType=='parent',true,false)}" height="16" width="20" title="Click to expand/collapse nested items." onClick="TreeNodeElement.prototype.toggle(this,'{!a.thisOHWrapper.nodeId}')"/>
+                            <apex:image id="Tree_parent_end" url="/img/tree/minusEnd.gif" rendered="{!IF(a.thisOHWrapper.nodeType=='parent_end',true,false)}" height="16" width="20" title="Click to expand/collapse nested items." onClick="TreeNodeElement.prototype.toggle(this,'{!a.thisOHWrapper.nodeId}')"/>                
+                            <apex:image id="Icon_parent" url="/img/icon/factory16.png" width="16" height="16" rendered="{!IF(a.thisOHWrapper.currentNode,false,true)}"/>
+                            <apex:image id="Icon_parent_current" url="/img/icon/star16.png" width="16" height="16" rendered="{!IF(a.thisOHWrapper.currentNode,true,false)}"/>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(OR(a.thisOHWrapper.nodeType=='child',a.thisOHWrapper.nodeType=='child_end'),true,false)}">
+                            <apex:image id="Tree_child" url="/img/tree/node.gif" rendered="{!IF(a.thisOHWrapper.nodeType=='child',true,false)}" height="16" width="20" title="Click to expand/collapse nested items." onClick="TreeNodeElement.prototype.toggle(this,'{!a.thisOHWrapper.nodeId}')"/>
+                            <apex:image id="Tree_child_current" url="/img/tree/nodeEnd.gif" rendered="{!IF(a.thisOHWrapper.nodeType=='child_end',true,false)}" height="16" width="20" title="Click to expand/collapse nested items." onClick="TreeNodeElement.prototype.toggle(this,'{!a.thisOHWrapper.nodeId}')"/>
+                            <apex:image id="Icon_child" url="/img/icon/desk16.png" width="16" height="16" rendered="{!IF(a.thisOHWrapper.currentNode,false,true)}"/>    
+                            <apex:image id="Icon_child_current" url="/img/icon/star16.png" width="16" height="16" rendered="{!IF(a.thisOHWrapper.currentNode,true,false)}"/>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(a.thisOHWrapper.nodeType=='end',true,false)}">
+                            <apex:image id="Tree_end" url="/img/tree/nodeEnd.gif" height="16" width="20"/>&nbsp;
+                            <apex:image id="Icon_end" url="/img/icon/desk16.png" width="16" height="16" rendered="{!IF(a.thisOHWrapper.currentNode,false,true)}"/>
+                            <apex:image id="Icon_end_current" url="/img/icon/star16.png" width="16" height="16" rendered="{!IF(a.thisOHWrapper.currentNode,true,false)}"/>
+                        </apex:outputText>
+                        <apex:outputLink value="/{!a.thisOHWrapper.thisObject.id}" style="{!IF(a.thisOHWrapper.currentNode,'font-weight: bold;','')}" styleClass="columnHeadActiveBlack" target="_top">
+                            {!a.thisOHWrapper.objectName}
+                        </apex:outputLink>
+                    </span>
+                    </apex:column>
+
+                    <apex:column >
+                        <apex:facet name="header">Account Number</apex:facet>
+                        <apex:outputText value="{!a.thisAccount.Account_Number__c}" />
+                    </apex:column>
+
+                    <apex:column >
+                        <apex:facet name="header">City, State, Country</apex:facet>
+                        <apex:outputText value="{!a.addressDetails}" />
+                    </apex:column>
+
+                    <apex:column >
+                        <apex:facet name="header">Brand Status</apex:facet>
+                        <apex:outputLink value="/{!a.thisAccount.Account_Brands__r[0].Id}" target="_top">{!a.thisAccount.Account_Brands__r[0].Status__c}</apex:outputLink>
+                        <!--<apex:outputText value="{!a.thisAccount.Account_Brands__r[0].Status__c}" />  -->
+                    </apex:column>
+
+                    <apex:column >
+                        <apex:facet name="header">Brand Sales Owner</apex:facet>
+                        <apex:outputText value="{!a.thisAccount.Account_Brands__r[0].Primary_Owner__r.Name}" />
+                    </apex:column>
+
+                    <apex:column >
+                        <apex:facet name="header">Account Status</apex:facet>
+                        <apex:outputText value="{!a.thisAccount.Status__c}" />
+                    </apex:column>                                      
+                        
+                </apex:pageBlockTable>      
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

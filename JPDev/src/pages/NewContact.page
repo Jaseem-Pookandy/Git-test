@@ -1,0 +1,5 @@
+<apex:page standardController="Contact" extensions="NewContactController" action="{!RedirectUser}">
+<script>
+//window.location.href = '/003/e?RecordType=012d0000000wy41&ent=Event&nooverride=1';
+</script>
+</apex:page>

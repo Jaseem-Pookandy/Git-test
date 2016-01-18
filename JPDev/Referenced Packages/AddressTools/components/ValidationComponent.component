@@ -1,0 +1,335 @@
+<apex:component controller="pw_ccpro.ValidationComponentController" access="global"  allowDML="true" >
+    <apex:attribute description="Object name" required="true" name="objectName" type="String" assignTo="{!objectSFName}" access="global" />
+    <apex:attribute description="Country" required="true" name="country" type="String" assignTo="{!countrySF}" access="global" />
+    
+    <script src="/soap/ajax/30.0/connection.js"></script>
+    <script src="/soap/ajax/30.0/apex.js"></script>
+    
+    <script src="/apex/CountriesJavaScript?core.apexpages.devmode.url=1"></script>
+    <script src="/resource/1280827391000/CountryCompleteResources/javascript/CountryAutoComplete.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+    <style>
+        .labelCol { 
+            vertical-align: top; 
+            color: #4a4a56; 
+            font-weight: bold;
+            text-align: right;
+            padding-right: 10px;
+            padding-bottom: 3px;
+            padding-top: 3px;
+        }
+        
+        .content {
+            color: #000;
+            padding-left: 10px;
+            padding-bottom: 3px;
+            padding-top: 3px;
+        }   
+      </style>
+      
+      <script type="text/javascript">
+      		jQuery.noConflict();   
+			pw_cc_countries.objectId = '{!objectId}';
+				
+      		jQuery(document).ready(function(){ 
+	      		pw_cc_countries.objectId = '{!objectId}';			
+      			jQuery("[id$='statusField']").attr("name","{!validateFields.statusId}");
+      			jQuery("[id$='statusField']").attr("id","{!validateFields.statusId}");
+       		});
+       		
+       		function clearErrors() {
+       			var latitude = jQuery("[id$='{!validateFields.latitudeId}']");
+				var longitude = jQuery("[id$='{!validateFields.longitudeId}']");
+				
+				var divLatitude = jQuery("div[id$='latitudeLocationError']");
+				var divLongitude = jQuery("div[id$='longitudeLocationError']");	
+		
+				latitude.removeAttr('style');
+				divLatitude.attr("style","display: none;");
+				divLatitude.empty();
+				longitude.removeAttr('style');
+				divLongitude.attr("style","display: none;");
+				divLongitude.empty();
+			}
+		
+       		function saveFields() {
+       			var isError = false;
+				var latitudeError = false;
+				var longitudeError = false;
+				var emptyLatitudeError = false;
+				var emptyLongitudeError = false;
+				var latitudeExcessError = false;
+				var longitudeExcessError = false;
+				var errorMessage = '';
+				
+				var latitude = jQuery("[id$='{!validateFields.latitudeId}']");
+				var longitude = jQuery("[id$='{!validateFields.longitudeId}']");
+				
+				var divLatitude = jQuery("div[id$='latitudeLocationError']");
+				var divLongitude = jQuery("div[id$='longitudeLocationError']");	
+						
+				var latitudeVal = latitude.val();
+				var longitudeVal = longitude.val();
+				
+				if (latitudeVal == '' && longitudeVal != '') {
+					emptyLatitudeError = isError = true;
+				}
+				else if (latitudeVal != '' && longitudeVal == '') {
+					emptyLongitudeError = isError = true;
+				}
+				else if (latitudeVal != '' && longitudeVal != '') {
+					var latitudeMatch = latitudeVal.match(/^(?:-)?(?=.+)(?:[1-9]\d*|0)?(?:\.\d+)?$/);
+					var longitudeMatch = longitudeVal.match(/^(?:-)?(?=.+)(?:[1-9]\d*|0)?(?:\.\d+)?$/);
+					
+					if (latitudeMatch == null) {
+						latitudeError = isError = true;
+					}
+					if (longitudeMatch == null) {
+						longitudeError = isError = true;
+					}
+					if (latitudeMatch != null && (parseFloat(latitudeMatch) > 90 || parseFloat(latitudeMatch) < -90)) {
+						latitudeExcessError = isError = true;	
+					}
+					if (longitudeMatch != null && (parseFloat(longitudeMatch) > 180 || parseFloat(longitudeMatch) < -180)) {
+						longitudeExcessError = isError = true;	
+					}
+				}
+
+				clearErrors();				
+       			if (!isError) {
+	       			jQuery("[id$='hiddenStreet']").val(jQuery("[id$='{!validateFields.streetId}']").val());
+	       			jQuery("[id$='hiddenCity']").val(jQuery("[id$='{!validateFields.cityId}']").val());
+	       			jQuery("[id$='hiddenState']").val(jQuery("[id$='{!validateFields.stateId}']").val());
+	       			jQuery("[id$='hiddenZip']").val(jQuery("[id$='{!validateFields.zipId}']").val());
+	       			jQuery("[id$='hiddenCountry']").val(jQuery("[id$='{!validateFields.countryId}']").val());
+	       			jQuery("[value$='"+jQuery("[id$='{!validateFields.statusId}']").val()+"']").attr("selected","selected");     			
+	       			jQuery("[id$='hiddenStatus']").val(jQuery("[id$='{!validateFields.statusId}']").val());
+	       			jQuery("[id$='hiddenLatitude']").val(jQuery("[id$='{!validateFields.latitudeId}']").val());
+	       			jQuery("[id$='hiddenLongitude']").val(jQuery("[id$='{!validateFields.longitudeId}']").val());
+	       			saveValidation();   
+	       		}  
+	       		else {
+					if (latitudeError) {
+						latitude.attr('style','border: 2px solid #c00;');
+						divLatitude.attr("style","display: block;");
+						divLatitude.append("<strong>Error:</strong> Invalid latitude value");
+					}
+					
+					if (longitudeError ) {
+						longitude.attr('style','border: 2px solid #c00;');
+						divLongitude.attr("style","display: block;");
+						divLongitude.append("<strong>Error:</strong> Invalid longitude value");
+					}
+					
+					if (latitudeExcessError) {
+						latitude.attr('style','border: 2px solid #c00;');
+						divLatitude.attr("style","display: block;");
+						divLatitude.append("<strong>Error:</strong> Latitude's value should not be more than 90 or less than -90");
+					}
+					
+					if (longitudeExcessError ) {
+						longitude.attr('style','border: 2px solid #c00;');
+						divLongitude.attr("style","display: block;");
+						divLongitude.append("<strong>Error:</strong> Longitude's value should not be more than 180 or less than -180");
+					}
+
+					if (emptyLatitudeError) {
+						latitude.attr('style','border: 2px solid #c00;');
+						divLatitude.attr("style","display: block;");
+						divLatitude.append("<strong>Error:</strong> Latitude and longitude can have empty values only together");
+					}
+					
+					if (emptyLongitudeError) {
+						longitude.attr('style','border: 2px solid #c00;');
+						divLongitude.attr("style","display: block;");
+						divLongitude.append("<strong>Error:</strong> Latitude and longitude can have empty values only together");
+					}	
+				}
+       		}
+       		
+       		function validationCompleted() {
+				var errorMessage = jQuery("[id$='errorMessage']").text();			
+                if (errorMessage == '') {
+	       			jQuery("[id$='viewStreet']").empty();
+	       			jQuery("[id$='viewStreet']").text(jQuery("[id$='{!validateFields.streetId}']").val());
+	       			
+	       			jQuery("[id$='viewCity']").empty();
+	       			jQuery("[id$='viewCity']").text(jQuery("[id$='{!validateFields.cityId}']").val());
+	       			
+	       			jQuery("[id$='viewState']").empty();
+	       			jQuery("[id$='viewState']").text(jQuery("[id$='{!validateFields.stateId}']").val());
+	       			
+	       			jQuery("[id$='viewZip']").empty();
+	       			jQuery("[id$='viewZip']").text(jQuery("[id$='{!validateFields.zipId}']").val());
+	       			
+	       			jQuery("[id$='viewCountry']").empty();
+	       			jQuery("[id$='viewCountry']").text(jQuery("[id$='{!validateFields.countryId}']").val());  
+	       			  			
+	       			jQuery("[id$='viewStatus']").empty();
+	       			jQuery("[id$='viewStatus']").text(jQuery("[id$='{!validateFields.statusId}']").val());
+	
+	       			document.getElementById('viewMode').style.display='block';
+	    			document.getElementById('editMode').style.display = 'none';
+    			}
+       		}
+       		
+       		function EditFields() {
+       			document.getElementById('viewMode').style.display='none';
+    			document.getElementById('editMode').style.display = 'block';
+    		}
+     </script>
+
+      <apex:form >
+      	  <apex:inputHidden value="{!street}" id="hiddenStreet"/>
+      	  <apex:inputHidden value="{!city}" id="hiddenCity"/>
+      	  <apex:inputHidden value="{!state}" id="hiddenState"/>
+      	  <apex:inputHidden value="{!zip}" id="hiddenZip"/>
+      	  <apex:inputHidden value="{!country}" id="hiddenCountry"/>
+      	  <apex:inputHidden value="{!status}" id="hiddenStatus"/>
+      	  <apex:inputHidden value="{!latitude}" id="hiddenLatitude"/>
+      	  <apex:inputHidden value="{!longitude}" id="hiddenLongitude"/>
+ 		  
+ 		  <apex:outputPanel rendered="{!OR(validateFields.streetId != null, validateFields.countryId != null, validateFields.zipId != null, validateFields.stateId != null, validateFields.cityId != null)}">
+		      <div id="viewMode">
+			      <table class="detailList" style="width: 100%; cellspacing: 0; cellpadding: 0; border: 0;">
+				      <tbody>
+				        <tr>
+					        <apex:outputPanel rendered="{!validateFields.statusLabel != null}">
+					            <td class="labelCol" style="border-bottom: 1px solid #ececec;"><apex:outputLabel value="{!validateFields.statusLabel}" /></td>
+					            <td class="dataCol col02" style="border-bottom: 1px solid #ececec;">
+					             	<apex:outputText value="{!validateFields.status}" id="viewStatus" />
+					            <br/></td>
+				            </apex:outputPanel>
+				        </tr>
+				        <tr>
+				            <td class="labelCol">{!validateFields.addressName}</td>
+				            <td>			               
+				               <apex:outputPanel rendered="{!validateFields.street != null}">			               
+				                    <apex:outputText value="{!validateFields.street}" id="viewStreet"/>
+				                </apex:outputPanel>
+				                
+				                <apex:outputPanel rendered="{!OR(validateFields.city != null,validateFields.state != null,validateFields.zip != null)}">
+				                    <apex:outputPanel rendered="{!validateFields.street != null}">
+				                        <br/>
+				                    </apex:outputPanel>
+				                    <apex:outputText value="{!validateFields.city}" id="viewCity"/>
+				                    <apex:outputPanel rendered="{!AND(validateFields.city != null,validateFields.state != null)}">,&nbsp;</apex:outputPanel>
+				                    <apex:outputText value="{!validateFields.state}" id="viewState"/>
+				                    <apex:outputPanel rendered="{!AND(validateFields.state != null,validateFields.zip != null,validateFields.city != null)}">&nbsp;</apex:outputPanel>
+				                    <apex:outputPanel rendered="{!AND(validateFields.state == null,validateFields.zip != null,validateFields.city != null)}">,&nbsp;</apex:outputPanel>
+				                    <apex:outputText value="{!validateFields.zip}" id="viewZip"/>
+				                </apex:outputPanel>
+				                
+				                <apex:outputPanel rendered="{!validateFields.country != null}">
+				                    <apex:outputPanel rendered="{!OR(validateFields.city != null,validateFields.state != null,validateFields.zip != null)}">
+				                        <br/>
+				                    </apex:outputPanel>
+				                    <apex:outputText value="{!validateFields.country}" id="viewCountry"/>
+				                </apex:outputPanel>			                 
+				             </td>
+				        </tr>
+				       </tbody>
+			    </table><br/>
+			    <div align="center">
+			    	<input type="button" class="btn" value="Edit" onclick="EditFields(); return false;"/>
+			    </div>
+		    </div>
+		    
+		    <div id="editMode" style="display:none;"> 
+		    	<apex:pageMessages id="errorMessage"/>
+			    <table class="detailList" style="width: 100%; cellspacing: 0; cellpadding: 0; border: 0;">
+					<tbody>
+				        <tr>
+				           <apex:outputPanel rendered="{!validateFields.statusLabel != null}">
+					           <td class="labelCol">
+									<label for="{!validateFields.statusId}">{!validateFields.statusLabel}</label>
+								</td><td><span>
+							 	 	<apex:selectList value="{!validateFields.status}" size="1" id="statusField">
+							 	 	 	<apex:selectOptions value="{!validateFields.options}"/>
+							 	 	</apex:selectList><br/></span>
+								</td>
+							</apex:outputPanel>
+				        </tr>
+				        <tr>
+				        	<apex:outputPanel rendered="{!validateFields.streetLabel != null}">
+					        	<td class="labelCol">
+					        		<label for="{!validateFields.streetId}">{!validateFields.streetLabel}</label>
+					        	</td><td class="dataCol col02">
+					        		<textarea id="{!validateFields.streetId}" wrap="soft" type="text" rows="2" name="{!validateFields.streetId}" maxlength="255" cols="27">{!validateFields.street}</textarea>
+					        	</td>
+				        	</apex:outputPanel>
+				        </tr>
+				        <tr>
+				        	<apex:outputPanel rendered="{!validateFields.cityLabel != null}">
+					        	<td class="labelCol">
+									<label for="{!validateFields.cityId}">{!validateFields.cityLabel}</label>
+								</td><td class="dataCol col02">
+									<input id="{!validateFields.cityId}" type="text" size="20" name="{!validateFields.cityId}" maxlength="40" value="{!validateFields.city}"/>
+								</td>
+							</apex:outputPanel>
+				        </tr>
+				        <tr>
+				        	<apex:outputPanel rendered="{!validateFields.stateLabel != null}">
+					        	<td class="labelCol">
+									<label for="{!validateFields.stateId}">{!validateFields.stateLabel}</label>
+								</td><td class="dataCol col02">
+									<input id="{!validateFields.stateId}" type="text" size="20" name="{!validateFields.stateId}" maxlength="80" value="{!validateFields.state}" />
+								</td>
+							</apex:outputPanel>
+				        </tr>
+				        <tr>
+					        <apex:outputPanel rendered="{!validateFields.zipLabel != null}">
+					        	<td class="labelCol">
+									<label for="{!validateFields.zipId}">{!validateFields.zipLabel}</label>
+								</td><td class="dataCol col02">
+									<input id="{!validateFields.zipId}" type="text" size="20" name="{!validateFields.zipId}" maxlength="20" value="{!validateFields.zip}"/>
+								</td>
+							</apex:outputPanel>
+				        </tr>
+				        <tr>
+					    	<apex:outputPanel rendered="{!validateFields.countryLabel != null}">
+					        	<td class="last labelCol">
+									<label for="{!validateFields.countryId}">{!validateFields.countryLabel}</label>
+								</td><td class="dataCol col02 last">
+									<input id="{!validateFields.countryId}" type="text" size="20" name="{!validateFields.countryId}" maxlength="80" value="{!validateFields.country}"/>
+								</td>
+							</apex:outputPanel>
+				        </tr>
+				        <tr>
+					        <apex:outputPanel rendered="{!AND(validateFields.latitudeLabel != null,validateFields.EnableGeolocation)}">
+					        	<td class="last labelCol">
+									<label for="{!validateFields.latitudeId}">{!validateFields.latitudeLabel}</label>
+								</td><td class="dataCol col02 last">
+									<input id="{!validateFields.latitudeId}" type="text" size="20" name="{!validateFields.latitudeId}" maxlength="80" value="{!validateFields.latitude}"/>
+									<div class="errorMsg" id="latitudeLocationError" style="display: none;" ></div>
+								</td>
+							</apex:outputPanel>
+				        </tr>
+				        <tr>
+					        <apex:outputPanel rendered="{!AND(validateFields.longitudeLabel != null,validateFields.EnableGeolocation)}">
+					        	<td class="last labelCol">
+									<label for="{!validateFields.longitudeId}">{!validateFields.longitudeLabel}</label>
+								</td><td class="dataCol col02 last">
+									<input id="{!validateFields.longitudeId}" type="text" size="20" name="{!validateFields.longitudeId}" maxlength="80" value="{!validateFields.longitude}"/>
+									<div class="errorMsg" id="longitudeLocationError" style="display: none;" ></div>
+								</td>
+							</apex:outputPanel>
+				        </tr>
+			        </tbody>
+			    </table><br/>
+			   	<div align="center">
+			    	<input type="button" class="btn" value="Save" onclick="saveFields();"/>
+	          		<apex:commandButton action="{!Cancel}" id="cancel" value="Cancel" rerender=""/>
+	          	</div>
+		    </div>
+	    </apex:outputPanel>
+	    <apex:outputPanel rendered="{!AND(validateFields.streetId == null, validateFields.countryId == null, validateFields.zipId == null, validateFields.stateId == null, validateFields.cityId == null)}">
+	    	<b>There is no validation rule for this object type{!IF(IsVersionPro, ', record type', '')} and country name</b>
+	    </apex:outputPanel>
+	    <apex:actionFunction action="{!save}" name="saveValidation" rerender="errorMessage" oncomplete="validationCompleted()">      
+      	</apex:actionFunction>
+	</apex:form>
+	
+	<script src="/resource/1416416520000/AddressCompleteResources/javascript/AddressComplete.js"></script>
+</apex:component>

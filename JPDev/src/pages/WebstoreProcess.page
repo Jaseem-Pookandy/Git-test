@@ -1,0 +1,122 @@
+<apex:page standardController="Webstore_Order__c" extensions="WebstoreProcessController" id="WSProcessPg">
+    <script type="text/javascript" src="/js/functions.js"></script>
+	<script src="/soap/ajax/28.0/connection.js"></script>
+	<script src="/soap/ajax/28.0/apex.js"></script>
+
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+	<script>
+	    var oldURL = '';
+		var j$ = jQuery.noConflict();
+		   j$(document).ready(function() {
+		    oldURL = document.referrer;
+		    //alert(oldURL);
+		});        
+
+ 	</script>
+
+	<apex:form id="form">
+		<h1>Processing....</h1>
+    </apex:form> 
+    <script>
+		function init() 
+		{                
+        	sforce.connection.sessionId = '{!$Api.Session_ID}';
+			var accountName = "{!Webstore_Order__c.Account__c}";
+			var contactName = "{!Webstore_Order__c.Contact__c}";
+			var userGroupName = "{!Webstore_Order__c.User_Group__c}";
+			var proceed = true; 
+        	var webstoreId = '{!Webstore_Order__c.Id}';
+
+			if( accountName == "" || contactName == "" || userGroupName == "")
+			{
+				alert("All references are required");
+				proceed = false;
+			}
+			else if("{!Webstore_Order__c.Email__c}" == "")
+			{
+				alert("Email Address is required");
+				proceed = false;
+			}
+			else if("{!Webstore_Order__c.Initial_Term__c}" == "")
+			{
+				alert("Initial Term is required");
+				proceed = false;
+			} 
+			else
+			{
+				if(proceed)
+				{
+					proceed = false;
+		        	var refResult = sforce.apex.execute("WebstoreOrderSendToZBilling", "createWebstoreReferenceObjects", {webstoreOrderId:webstoreId});
+					for (var i = 0; i < refResult.length; i++)
+					{
+						var resultArry = refResult[i].split(":");
+						if(resultArry.length == 2)
+						{
+							if(resultArry[0] == "Success")
+							{
+								proceed = true;
+							}
+							else
+							{
+								alert("All references are required");
+								proceed = false;
+							} 
+						}
+					}
+				} 
+				if(proceed)
+				{
+					var reason = ""; 
+		        	var subResult = sforce.apex.execute("WebstoreOrderSendToZBilling", "createZuoraSubscription", {webstoreOrderId:webstoreId});	
+					for (var i = 0; i < subResult.length; i++)
+					{
+						var resultArry = subResult[i].split(":");
+						if(resultArry.length >= 3)
+						{
+							var webstore = new sforce.SObject("Webstore_Order__c");
+							webstore.Id = resultArry[1];
+							if(resultArry[0] == "Success")
+							{
+								webstore.Zuora_Subscription_ID__c = resultArry[2];
+								webstore.Status__c = "Processed";
+								reason = resultArry[3];
+								if(resultArry[4])
+								{
+									reason += resultArry[4];
+								}
+							}
+							else
+							{
+								webstore.Status__c = "Failed";
+								reason = resultArry[2];
+								if(resultArry[3])
+								{
+									reason += resultArry[3];
+								}
+							}
+							if(reason.length > 255)
+							{
+								reason = reason.substring(0, 254);
+							}
+							webstore.Reason__c = reason;
+							result = sforce.connection.update([webstore]); 
+						}
+					}
+				}				
+			}
+			window.location.href = oldURL; 
+		}
+
+		var previousOnload = window.onload;        
+		window.onload = function() 
+		{ 
+			if (previousOnload) 
+			{ 
+				previousOnload();
+			}
+			init();
+		}
+	</script>	
+</apex:page>

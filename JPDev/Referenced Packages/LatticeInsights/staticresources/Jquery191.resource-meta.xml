@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+    <cacheControl>Public</cacheControl>
+    <contentType>application/x-javascript</contentType>
+    <description>Jquery - v1.9.1 
+
+Used for some basic DOM manipulation and required in order to use CanJS.</description>
+</StaticResource>

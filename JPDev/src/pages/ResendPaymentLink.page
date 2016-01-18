@@ -1,0 +1,291 @@
+<apex:page showHeader="true" standardStylesheets="true" standardController="Payment_Link__c" extensions="ResendPaymentLinkController">
+
+	<style type="text/css">
+
+		.activeTab {
+			background-image: none; 
+			font-size: 12px;
+		}
+
+		.inactiveTab {
+			background-image: none;
+			background-color: lightgrey;
+			font-size: 12px;
+		}
+
+        .DHX_Data {
+            font-weight: normal;
+            text-align: left;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            vertical-align: middle !important;
+            width: 196px !important;
+        }
+
+        .DHX_ReallyWideData {
+            font-weight: normal;
+            text-align: left;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            vertical-align: middle !important;
+            width: 250px !important;
+        }        
+
+        .DHX_Largetextfield {
+            font-weight: normal;
+            text-align: left;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+            vertical-align: middle !important;
+            width: 80% !important;
+        }
+
+        .DHX_Button {
+            font-weight: normal;
+            font-family: Arial,Helvetica,sans-serif;
+            line-height: 1.3;
+        }  	        
+
+        .rich-tabpanel-content {
+        	font-size: 12px !important;
+        }
+	</style>
+   
+	<apex:form id="resendPaymentLinkForm">
+ 	
+        <apex:outputPanel id="javascriptRedirects">
+            <apex:outputText rendered="{!renderBehalfJavascript}">
+
+                <script type="text/javascript">
+                    
+                    //open a popup to the necessary URL:
+                    window.open('{!onBehalfOfURL}&fr=' + Math.random(), '_blank');
+
+                    //no longer
+                    //window.location = "/{!oppId}";
+
+                </script>
+
+            </apex:outputText>        
+        </apex:outputPanel>
+
+        <apex:actionstatus id="disableScreen">
+            <apex:facet name="start">
+                <div class="waitingSearchDiv" id="el_loading" style="background-color: rgba(0, 0, 0, 0.5); height:100%; width:100%; z-index: 9998; left: 0; top: 0; position: fixed;"> 
+                    <div class="waitingHolder" style="top: 300px; width: 200px; height:80px; border-radius: 25px; border: 2px solid #000000; background-color:#FFFFFF; z-index:9999; text-align: center; padding: 5px;">
+                        <br/>
+                        <img class="waitingImage" src="/img/loading.gif" />
+                        <br/><br/>
+                        <span><strong>Processing...</strong></span>
+                    </div>
+                </div>
+            </apex:facet>
+            <apex:facet name="stop">
+            </apex:facet>
+        </apex:actionstatus>
+
+	 	<apex:sectionHeader title="New Remittance Link" rendered="{!renderBehalfJavascript == false}"/>
+
+    	<apex:outputPanel id="errorMessages" style="width: 100%;">
+    		<apex:pageMessage severity="error" strength="3" title="Unable to continue until the following errors are corrected:" rendered="{!errors.size > 0}" escape="false">        			
+            	<apex:dataList value="{!errors}" var="specificError">
+            		{!specificError}
+            	</apex:dataList>
+        	</apex:pageMessage>
+		</apex:outputPanel>
+
+        <!-- We're really in edit mode, but in order to hide the 'Required Information' from the header we're setting the mode to detail, purely for aesthetics. -->
+	 	<apex:pageBlock id="resendLinkPB" mode="detail" rendered="{!pageIsPrepped && renderBehalfJavascript == false}">
+            	
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!Cancel}" value="Return to Opportunity" />
+                <apex:commandButton action="{!SaveItAll}" value="{!continueButtonText}" status="disableScreen" reRender="resendPaymentLinkForm" />
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockSection id="oppDetails" title="Opportunity Details" collapsible="false" columns="2" showHeader="true">  
+
+                <apex:outputField value="{!thisOpp.AccountId}" />
+                <apex:outputField value="{!thisOpp.SyncedQuote__r.zqu__Opportunity__c}" />
+                <apex:outputField value="{!thisOpp.SyncedQuote__c}" />
+                <apex:outputField value="{!thisOpp.StageName}" />
+
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="paymentLinkDetails" title="New Remittance Link" collapsible="false" columns="2" showHeader="true">	
+
+                <apex:pageBlockSectionItem helpText="{!reasonHelpText}" id="thisLinkReason" rendered="{!emailLink}">
+                    <apex:outputLabel value="Reason" />
+                    <apex:outputPanel >                     
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputField value="{!thisPL.Reason__c}" required="false" styleClass="DHX_ReallyWideData">   <!-- This actually is required, but I need to do it differently so as to not interrupt the page validation and other actions. -->
+                                <apex:actionSupport event="onchange" reRender="caseDetailsWrapper, paymentLinkDetails" status="disableScreen" action="{!ProcessReasonSelection}"/>
+                            </apex:inputField>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem helpText="{!reasonHelpText}" id="thisLinkReasonDisabled" rendered="{!emailLink == false}">
+                    <apex:outputLabel value="Reason" />
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputText value="{!thisPL.Reason__c}" required="false" disabled="true" styleClass="DHX_ReallyWideData" />
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <apex:inputField value="{!thisPL.AutoPay_Off__c}" required="false" />
+
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection collapsible="false" columns="1" showHeader="false" rendered="{!emailLink}">  
+
+                <apex:pageBlockSectionItem helpText="If any additional text is desired on the email sent, enter it here.">
+                    <apex:outputLabel value="Additional Text in Email" />
+                    <apex:inputField value="{!thisPL.Additional_Email_Text__c}" styleClass="DHX_Largetextfield" />
+                </apex:pageBlockSectionItem>
+
+                
+
+            </apex:pageBlockSection>                
+
+	        <br/><br/>
+            	     
+			<apex:tabPanel switchType="client" value="{!tabInFocus}" selectedTab="existingContact" id="theTabPanel" width="90%" style="text-align: center; margin: 0 auto;" activeTabClass="activeTab" inactiveTabClass="inactiveTab" rendered="{!emailLink}">
+		        <apex:tab label="Select an Existing Contact" name="existingContact" id="existingContact">
+		        	<apex:pageBlockSection id="contactSection" title="no title..." collapsible="false" columns="2" showHeader="false">
+
+						<apex:pageBlockSectionItem id="contactItem" rendered="{!useThePicklist}" HelpText="The picklist (dropdown) control displays all contacts for the current Account and the Opportunity's Sold By Partner Account (if populated, users are marked with an *).  If you need to select a contact from a different account, you must use the lookup option.">
+                            <apex:outputLabel value="Contact" for="contact_ddl" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:selectList id="contact_ddl" value="{!thisPL.Contact__c}" size="1" styleClass="DHX_Data">
+                                        <apex:selectOptions value="{!contactOptions}" />
+                                        <apex:actionSupport event="onchange" reRender="contactSection" status="disableScreen" action="{!GetContactInfo}"/>
+                                    </apex:selectList>
+                                    &nbsp;&nbsp;<apex:commandButton action="{!SwitcherooClick}" value="{!switcherooLabel}" id="switcheroo1" rerender="contactSection" />
+                                </div>                          
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem helpText="The Contact that will receive the remittance link email." rendered="{!useThePicklist == false}">
+                            <apex:outputLabel value="Contact" for="contact_lkp" />
+                            <apex:outputPanel >                     
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:inputField id="contact_lkp" value="{!thisPL.Contact__c}" required="false" onKeyPress="return disableEnterKey(event)" >  
+                                        <apex:actionSupport event="onchange" reRender="contactSection" status="disableScreen" action="{!GetContactInfo}"/>
+                                    </apex:inputField>
+                                    &nbsp;&nbsp;<apex:commandButton action="{!SwitcherooClick}" value="{!switcherooLabel}" id="switcheroo2" rerender="contactSection" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>                      
+
+                        <apex:pageBlockSectionItem helpText="The email address that will receive the new Remittance Link email.">
+                            <apex:outputLabel value="Email" for="contactsEmail" />
+		        		    <apex:outputField id="contactsEmail" value="{!existingContact.Email}" />
+                        </apex:pageBlockSectionItem>
+                        
+		        	</apex:pageBlockSection>
+		        </apex:tab>
+
+	        	<apex:tab label="Contact Doesn't Exist?  Create it here..." name="newContact" id="newContact">
+	        		<apex:pageBlockSection id="blah" title="no title..." collapsible="false" columns="2" showHeader="false">                        
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="First Name" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"/>
+                                    <apex:inputField id="newContactFirst" value="{!newContact.FirstName}" required="false" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Last Name" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"/>
+                                    <apex:inputField id="newContactLast2" value="{!newContact.LastName}" required="false" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>                                
+
+                        <apex:outputField id="accountName" value="{!thisOpp.Account.Name}" />
+
+                        <apex:pageBlockSectionItem helpText="The email address that will receive the new Remittance Link email.">
+                            <apex:outputLabel value="Email" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"/>
+                                    <apex:inputField id="newContactEmail" value="{!newContact.Email}" required="false" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Language" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"/>
+                                    <apex:inputField id="newContactLanguage" value="{!newContact.Language__c}" required="false" />
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Contact Type" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"/>
+                                    <apex:selectList id="contact_ddl" value="{!contactTypeValue}" size="1" >
+                                        <apex:selectOptions value="{!contactTypeOptions}" />
+                                    </apex:selectList>
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>                        
+
+					</apex:pageBlockSection>
+        		</apex:tab>
+		    </apex:tabPanel>
+
+            <apex:outputPanel id="caseDetailsWrapper" >
+
+                <apex:pageBlockSection id="caseDetails" title="Additional Details" collapsible="false" columns="1" showHeader="true" rendered="{!createCaseOnCompletion}">
+                
+                    <apex:pageBlockSectionItem helpText="These notes are carried over to the case that is created upon completion of the Remittance Link.">
+                        <apex:outputLabel value="Case Notes" />
+                        <apex:outputPanel >
+                            <div class="requiredInput">
+                                <div class="requiredBlock"></div>
+                                <apex:inputField value="{!thisPL.Case_Description__c}" styleClass="DHX_Largetextfield" />
+                            </div>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+
+                </apex:pageBlockSection>
+
+            </apex:outputPanel>
+        </apex:pageBlock>
+
+        <apex:pageBlock id="resendLinkPBMessage" mode="detail" rendered="{!pageIsPrepped && renderBehalfJavascript}">
+
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!Cancel}" value="Return to Opportunity" />
+            </apex:pageBlockButtons>
+
+            <apex:outputPanel id="infoMessages" style="width: 100%;">
+                <apex:pageMessage severity="info" strength="2" title="Just in case..." rendered="{!infoMessages.size > 0}" escape="false">                  
+                    <apex:dataList value="{!infoMessages}" var="specificMessage">
+                        {!specificMessage}
+                    </apex:dataList>
+                </apex:pageMessage>
+            </apex:outputPanel>
+
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

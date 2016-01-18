@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <webLinks>
+        <fullName>Email_Pitch</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <hasMenubar>false</hasMenubar>
+        <hasScrollbars>true</hasScrollbars>
+        <hasToolbar>false</hasToolbar>
+        <height>600</height>
+        <isResizable>true</isResizable>
+        <linkType>page</linkType>
+        <masterLabel>Email Pitch</masterLabel>
+        <openType>newWindow</openType>
+        <page>EmailPitchContactDetail</page>
+        <position>none</position>
+        <protected>false</protected>
+        <showsLocation>false</showsLocation>
+        <showsStatus>false</showsStatus>
+    </webLinks>
+    <webLinks>
+        <fullName>Email_Pitch_List</fullName>
+        <availability>online</availability>
+        <displayType>massActionButton</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Email Pitch</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <requireRowSelection>true</requireRowSelection>
+        <url>{!REQUIRESCRIPT(&quot;/soap/ajax/30.0/connection.js&quot;)} 
+
+records = {!GETRECORDIDS($ObjectType.Contact)}; 
+
+if (records[0] == null) { 
+alert(&quot;Please select at least one row&quot;); 
+} 
+else { 
+
+var clist = &quot;&quot;; 
+
+for (var n=0; n&lt;records.length; n++) { 
+    if(n==records.length -1)
+      clist+=records[n];
+    else
+      clist+=records[n] + &quot;,&quot;; 
+}
+window.open(&apos;/apex/CLS4SF__EmailPitchContactList?clist=&apos;+clist,
+    &quot;ClearSlide&quot;,
+    &quot;width=800,height=600,resizable,scrollbars=yes,status=1&quot;);
+}</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Live_Pitch</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <hasMenubar>false</hasMenubar>
+        <hasScrollbars>true</hasScrollbars>
+        <hasToolbar>false</hasToolbar>
+        <height>600</height>
+        <isResizable>true</isResizable>
+        <linkType>page</linkType>
+        <masterLabel>Live Pitch</masterLabel>
+        <openType>newWindow</openType>
+        <page>LivePitchContactDetail</page>
+        <position>none</position>
+        <protected>false</protected>
+        <showsLocation>false</showsLocation>
+        <showsStatus>false</showsStatus>
+    </webLinks>
+</CustomObject>

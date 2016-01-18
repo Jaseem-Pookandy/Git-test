@@ -1,0 +1,108 @@
+<apex:page standardController="zqu__Quote__c" extensions="SelectProductsWithFilterCon"  sidebar="true" showHeader="true">
+	              
+        <apex:form id="quoting_form">
+        <apex:pageMessages id="pageErrors"/>
+        <apex:pageBlock rendered="{!!initFailed}" id="quoting_page_block">
+            <apex:pageBlockSection title="Selected Products" rendered="{!!selectNewProductViewMode}" columns="1">
+                <apex:outputPanel id="charge_group_edit_panel" rendered="{!editMode}">
+                    <zqu:zChargeGroup editMode="{!editMode}" chargeGroup="{!currentChargeGroup}">
+                        <apex:actionStatus id="saveStatus">
+                            <apex:facet name="start"> <apex:commandButton value="Saving ..." disabled="true" /> </apex:facet>
+                            <apex:facet name="stop"><apex:commandButton value="Save" action="{!saveChargeGroup}" reRender="quoting_page_block, pageErrors" status="saveStatus" /></apex:facet>
+                        </apex:actionStatus>
+                        <apex:actionStatus id="cancelStatus">
+                            <apex:facet name="start"><apex:commandButton value="Canceling ..." disabled="true" /></apex:facet>
+                            <apex:facet name="stop"><apex:commandButton value="Cancel" action="{!cancelEditing}" reRender="quoting_page_block, pageErrors" status="cancelStatus" /></apex:facet>
+                        </apex:actionStatus>
+                    </zqu:zChargeGroup>
+                </apex:outputPanel>
+                <apex:outputPanel id="charge_group_detail_panel"
+					rendered="true">
+					<!-- rendered="{!!editMode}" -->
+					<c:CustomChargeGroup id="chargeGroup" quoteId="{!zqu__Quote__c.Id}" chargeGroups="{!chargeGroupList}" allowEditInComponent="true"/>
+				</apex:outputPanel>
+                
+                <apex:actionStatus id="selectNewProductStatus">
+                    <apex:facet name="start"><apex:commandButton value="Querying ..." disabled="true" /></apex:facet>
+                    <apex:facet name="stop">
+                   
+                        <apex:commandButton value="Select New Products" action="{!toSelectNewProductsView}" reRender="quoting_page_block, pageErrors"
+                                                                                           rendered="{!! (editMode||selectNewProductViewMode) }" status="selectNewProductStatus"/>
+                    </apex:facet>
+                </apex:actionStatus>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Select New Products" rendered="{!selectNewProductViewMode}" columns="1">
+                <apex:outputPanel id="productselector_pageblock" rendered="{!!editMode}">
+                	<apex:commandButton value="Return to Quote" action="{!cancel}" />
+                	<apex:commandButton value="Clear Selected Product" action="{!clearSelectedProduct}" reRender="productselector_pageblock,quoting_page_block,errorMessage" />                	
+                	<apex:commandButton value="Clear Filters" action="{!clearFilters}" reRender="productselector_pageblock,quoting_page_block,errorMessage" />
+                    <apex:outputPanel id="product_panel">
+
+                    <apex:pageBlock title="Product Filters" >
+	                   	<apex:pageBlockSection >
+							<apex:selectList size="1" value="{!productGroupValue}" Label="Product Group:">
+								<apex:selectOptions value="{!productGroupList}"></apex:selectOptions>
+								<apex:actionSupport event="onchange" action="{!refreshProducts}" rerender="productselector_pageblock,quoting_page_block,errorMessage"/>
+							</apex:selectList>
+							<apex:selectList size="1" value="{!brandValue}" Label="Brand:">
+								<apex:selectOptions value="{!brandList}"></apex:selectOptions>
+								<apex:actionSupport event="onchange" action="{!refreshProducts}" rerender="productselector_pageblock,quoting_page_block,errorMessage"/>
+							</apex:selectList>
+						</apex:pageBlockSection>
+					</apex:pageBlock>
+                  		 	 
+                  		<apex:outputPanel style="text-align:right">
+							<apex:actionRegion >
+								<apex:inputText id="searchField" value="{!searchString}" />
+							</apex:actionRegion>
+							<apex:actionStatus id="stsProductSearch">
+								<apex:facet name="start">
+									<apex:commandButton value="Searching..." disabled="true" />
+								</apex:facet>
+								<apex:facet name="stop">
+									<apex:commandButton id="btnSearchProducts"
+										action="{!refreshProducts}" value="Search"
+										rerender="productselector_pageblock,quoting_page_block,errorMessage"
+										status="stsProductSearch"></apex:commandButton>
+								</apex:facet>
+							</apex:actionStatus>
+						</apex:outputPanel>
+                        <zqu:zSelectTable id="product_zselect_table" title="Product Summary" fieldNames="{!ProductDisplayFields}" selectRowShare="{!selectedProductShare}"
+                              setControllerShare="{!productDataShare}" rerenderIDs="{!$Component.rateplan_panel}, {!$Component.charges_panel}, {!$Component.pageErrors}" />
+                        <apex:outputText value="No matching product found." rendered="{!noMatchProduct}"/>                                                                                  
+                    </apex:outputPanel>
+
+                    <apex:outputPanel id="rateplan_panel" >
+                    	<b><apex:outputText id="selectedProduct" value="Selected Product: {!ProductName}" rendered="{!IsRenderRatePlan}"/> </b>
+						
+						<apex:pageBlock title="Rate Plan Filters" rendered="{!IsRenderRatePlan}" >
+                        	<apex:pageBlockSection >    
+                                <apex:selectList id="brandOptions" value="{!filterBrandTag}" Label="Brand Tag:"
+                                         size="1" required="true">
+                                    <apex:selectOptions value="{!BrandTagOptions}"/>
+									<apex:actionSupport event="onchange" action="{!refreshRatePlans}" rerender="rateplan_zselect_table"/>
+                                </apex:selectList>
+                                
+                                <apex:selectList id="billingFrequencyOptions" value="{!filterBillingFrequency}" Label="Billing Frequency:"
+                                         size="1" required="true">
+                                    <apex:selectOptions value="{!billingFrequencyOptions}"/>
+                                    <apex:actionSupport event="onchange" action="{!refreshRatePlans}" rerender="rateplan_zselect_table"/>
+                                </apex:selectList>
+                            </apex:pageBlockSection>
+                  		 </apex:pageBlock>
+                    
+                        <zqu:zSelectTable id="rateplan_zselect_table" title="Rate Plan Summary" fieldNames="{!ratePlanDisplayFields}" selectRowShare="{!selectedRatePlanShare}"
+                                                                          setControllerShare="{!rateplanDataShare}" rerenderIDs="{!$Component.charges_panel}, {!$Component.pageErrors}" rendered="{!IsRenderRatePlan}"/>
+                    </apex:outputPanel>
+                    <apex:outputText value="No matching rate plans found." rendered="{!noMatchRatePlan}"/>
+                    
+                    <apex:outputPanel id="charges_panel">
+                        <!-- Sample Component is referenced. This will be essentially your component -->
+                        <c:SampleChargeSection id="cChargeSec"  chargeGroup="{!chargeGroup}" rendered="{!IsRenderChargeGroup}" quoteId="{!zqu__Quote__c.Id}" productGroup="{!ProductGroup}" productSubCategory="{!ProductSubCategory}" priceEditable="{!PriceEditable}" accountBrandId="{!zqu__Quote__c.zqu__Opportunity__r.Account_Brand__c}" opportunityId="{!zqu__Quote__c.zqu__Opportunity__c}"/>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+
+</apex:page>

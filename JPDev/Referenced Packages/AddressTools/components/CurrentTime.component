@@ -1,0 +1,47 @@
+<apex:component access="global" controller="pw_ccpro.CurrentTimeOnPage">
+	<apex:attribute name="ZipCode" type="String" description="ZipCode" assignTo="{!ZipCodeValue}" />
+	<apex:attribute name="State" type="String" description="State" assignTo="{!StateValue}" />
+	<apex:attribute name="Country" type="String" description="Country" assignTo="{!CountryValue}" />
+	<apex:outputPanel layout="none" rendered="{!CurrentTimeValue != null}"> 
+    	<div style="float:right;"><i>Current time:</i> <strong><span id="CurrentTimeValue">{!CurrentTimeValue}</span></strong></div>
+    </apex:outputPanel>
+    <apex:outputPanel layout="none" rendered="{!CurrentTimeValue == null}">
+    	<div style="float:right;"><i>No timezone info found</i></div>
+    </apex:outputPanel>
+
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>   
+	<script type="text/javascript">
+		var $j = jQuery.noConflict();
+
+		$j(document).ready(function() {
+			initCurrentTime();
+			
+		});
+
+		var currentTime;
+		var constMillisecond = 1000;
+		
+		function initCurrentTime() {
+			if('{!TimeValue}' == '') 
+				return;
+
+			currentTime = new Date('{!TimeValue}');
+			setInterval(currentTimer, constMillisecond);
+		}
+		
+		function currentTimer()
+		{
+			currentTime.setMilliseconds(constMillisecond);
+			document.getElementById('CurrentTimeValue').innerHTML= currentTime.toCustomFormat('%m/%d/%y %H:%M:%S');
+		}
+		
+		Date.prototype.toCustomFormat = function(format) {
+			var f = {y : this.getUTCFullYear(), m : this.getUTCMonth() + 1, d : this.getUTCDate(), H : this.getUTCHours(), M : this.getUTCMinutes(), S : this.getUTCSeconds()}
+			for(k in f)
+				format = format.replace('%' + k, f[k] < 10 ? "0" + f[k] : f[k]);
+			return format;
+		};
+		
+
+	</script>
+</apex:component>

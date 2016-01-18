@@ -1,0 +1,6 @@
+<apex:page standardController="zqu__Quote__c" extensions="SendToZBillingController" > 
+    <apex:form >
+        <apex:pageMessages id="message"/>      
+        	<c:CustomChargeGroup id="chargeGroup" quoteId="{!zqu__Quote__c.Id}" chargeGroups="{!chargeGroupList}" allowEditInComponent="true"/>           
+    </apex:form>
+</apex:page>

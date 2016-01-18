@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+    <cacheControl>Public</cacheControl>
+    <contentType>application/x-javascript</contentType>
+    <description>CanJS - v1.1.4 
+
+Used for handling the communication between the Salesforce account list and the window containing the Account Detail information.</description>
+</StaticResource>
