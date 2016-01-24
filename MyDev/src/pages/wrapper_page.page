@@ -1,0 +1,26 @@
+<apex:page standardController="Account" extensions="Wrapper_example">
+    <apex:form >
+    <apex:pageBlock >
+    <apex:pageBlockTable value="{!wrapper1}" var="wr">
+    	<apex:column >
+         <apex:facet name="header">
+               <apex:inputCheckbox />
+            </apex:facet>   
+        <apex:inputCheckbox value="{!wr.selected}"/>
+        </apex:column>
+    	<apex:column >
+        	<apex:facet name="header">
+                Contact
+            </apex:facet>
+            <apex:outputLink value="{!wr.contactex.id}">
+                <apex:outputText value="{!wr.contactex.name}"/>
+            </apex:outputLink>
+        </apex:column> 
+    </apex:pageBlockTable>
+        <apex:pageBlockButtons >
+        	<apex:commandButton action="{!processselected}" value="doit"/>
+        </apex:pageBlockButtons>
+    </apex:pageBlock>
+        
+        </apex:form>
+</apex:page>
