@@ -1,3 +1,0 @@
-<apex:page standardController="Lead">
-    <c:CurrentTime ZipCode="{!Lead.PostalCode}" State="{!Lead.State}" Country="{!Lead.Country}" />
-</apex:page>

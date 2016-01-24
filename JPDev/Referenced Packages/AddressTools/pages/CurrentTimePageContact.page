@@ -1,3 +1,0 @@
-<apex:page standardController="Contact">
-    <c:CurrentTime ZipCode="{!Contact.MailingPostalCode}" State="{!Contact.MailingState}" Country="{!Contact.MailingCountry}"  />
-</apex:page>

@@ -1,9 +1,0 @@
-<apex:page standardController="zqu__Quote__c" extensions="InsufficientPrivileges" sidebar="true" showHeader="true">
-<apex:form >
-<br/>
-<h1>Insufficient Privileges:</h1><br/><br/>
-<apex:outputText value="Only 'New Subscription' and 'Amend Existing Subscription' are valid quote types.  Go back to select a valid quote type." /> <br/><br/>
-
-<apex:commandButton action="{!goBack}" value="Go Back"/>
-</apex:form>
-</apex:page>

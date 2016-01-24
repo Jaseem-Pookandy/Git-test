@@ -1,6 +1,0 @@
-<apex:component id="CC_headerComponent">
-  <br/>
-  <apex:panelGrid cellpadding="2" cellspacing="0" width="98%" border="0" columns="1" style="text-align: center;" id="theHeader">
-    <apex:image url="{!URLFOR($Resource.RemittanceManagement_Letterhead, 'DHILogo_Small.png')}" style="align: center;" alt="DHI Group" title="DHI Group"/>
-  </apex:panelGrid>
-</apex:component>

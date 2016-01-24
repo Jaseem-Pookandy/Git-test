@@ -1,9 +1,0 @@
-<apex:page showHeader="true" sidebar="true" controller="LaunchReportController" tabStyle="report">
-    
-    <apex:pageBlock title="Appologies, but there seems to have been an error.">
-        <h3>Unfortunately, this was a fatal error. Retrying will only make you frustrated.</h3>
-        <p>I can not find a report with that name -- {!ErrorReportName}.</p>
-        <p>Could you please verify that some pesky user hasn't renamed the report or deleted it?</p>
-    </apex:pageBlock>
-
-</apex:page>
