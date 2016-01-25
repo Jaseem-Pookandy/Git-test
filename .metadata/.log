@@ -297,3 +297,11 @@ This warning can be switched off on the Team > Git > Confirmations and Warnings 
 !ENTRY com.salesforce.ide.core 2 0 2016-01-24 13:25:36.398
 !MESSAGE  WARN [2016-01-24 13:25:36,398] (ProjectPackageList.java:saveResources:1161) - Component list in project package 'Salesforce Connected Apps' is empty.  No resources to save.
 
+
+!ENTRY com.salesforce.ide.core 2 0 2016-01-24 20:09:59.314
+!MESSAGE  WARN [2016-01-24 20:09:59,314] (DefaultBuilder.java:applyDirtyMarkers:93) - TODO: apply 'Save locally only...' markers on each resource
+
+
+!ENTRY com.salesforce.ide.core 4 0 2016-01-24 20:10:09.194
+!MESSAGE ERROR [2016-01-24 20:10:09,194] (MetadataOperationsRetryAspect.java:metadataOperationsRetry:34) - ForceRemoteException occurred while attempting to perform a metadata operation
+

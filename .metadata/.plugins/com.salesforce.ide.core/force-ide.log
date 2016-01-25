@@ -69,3 +69,5 @@
  WARN [2016-01-24 13:25:34,524] (ComponentFactory.java:getComponentByFilePath:614) - No id found for filepath 'applicationManifests/Workbench', tagging as component of type 'Unknown'
 ERROR [2016-01-24 13:25:34,524] (ProjectPackageList.java:generateComponents:483) - Filepath-zip mapping is null or empty for package 'Salesforce Connected Apps' [0A361000000bxLxCAI] - skipping component generation
  WARN [2016-01-24 13:25:36,398] (ProjectPackageList.java:saveResources:1161) - Component list in project package 'Salesforce Connected Apps' is empty.  No resources to save.
+ WARN [2016-01-24 20:09:59,314] (DefaultBuilder.java:applyDirtyMarkers:93) - TODO: apply 'Save locally only...' markers on each resource
+ERROR [2016-01-24 20:10:09,194] (MetadataOperationsRetryAspect.java:metadataOperationsRetry:34) - ForceRemoteException occurred while attempting to perform a metadata operation
